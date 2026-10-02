@@ -1,0 +1,27 @@
+# Dependencies and build output
+node_modules/
+dist/
+out/
+build/
+.turbo/
+*.tsbuildinfo
+coverage/
+
+# Release artifacts (upload them to GitHub Releases instead)
+/releases/
+*.dmg
+*.exe
+*.deb
+*.AppImage
+
+# Local configuration and secrets
+.env
+.env.local
+.env.*.local
+
+# Logs and system files
+*.log
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

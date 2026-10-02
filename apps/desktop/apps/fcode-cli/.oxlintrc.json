@@ -1,0 +1,6 @@
+{
+  // 桌面根配置排除整个 CLI，避免两套 workspace 重复扫描。
+  // CLI 包命令需要就近发现此配置；只清除继承的排除项，生产规则保持原样。
+  "extends": ["../../.oxlintrc.json"],
+  "ignorePatterns": []
+}

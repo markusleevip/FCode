@@ -1,0 +1,616 @@
+{
+  "entries": [
+    {
+      "file": "apps/desktop/scripts/prepare-isolated-desktop-data.mjs",
+      "line": "    join(userHome, \".zcode\", \"v2\", \"setting.json\"),",
+      "category": "compatibility",
+      "reason": "Missing-target-only read of historical global settings, without changing the source"
+    },
+    {
+      "file": "apps/desktop/scripts/prepare-isolated-desktop-data.mjs",
+      "line": "  const legacy = join(baseDir, \".zcode\");",
+      "category": "compatibility",
+      "reason": "Read isolated legacy data root only when the primary root is missing"
+    },
+    {
+      "file": "apps/desktop/example-base/.fcode/v2/runtime/provider/windows-x86_64/0.0.0-dev/endpoint-78d7c3bef4024722642626fe3669a799/fcode-builtin.json",
+      "line": "              \"baseUrl\": \"https://zcode.z.ai/api/v1/zcode-plan/anthropic\"",
+      "category": "external",
+      "reason": "Existing deployed external endpoint or wire namespace"
+    },
+    {
+      "file": "apps/desktop/example-base/.fcode/v2/runtime/provider/windows-x86_64/0.0.0-dev/endpoint-78d7c3bef4024722642626fe3669a799/fcode-builtin.json",
+      "line": "              \"baseUrl\": \"https://zcode.z.ai/api/v1/zcode-plan/anthropic\"",
+      "category": "external",
+      "reason": "Existing deployed external endpoint or wire namespace"
+    },
+    {
+      "file": "apps/desktop/example-base/.fcode/v2/runtime/provider/windows-x86_64/0.0.0-dev/endpoint-78d7c3bef4024722642626fe3669a799/fcode-builtin.json",
+      "line": "              \"baseUrl\": \"https://zcode.z.ai/api/v1/off-peak/anthropic\"",
+      "category": "external",
+      "reason": "Existing deployed external endpoint or wire namespace"
+    },
+    {
+      "file": "apps/desktop/example-base/.fcode/v2/runtime/provider/windows-x86_64/0.0.0-dev/endpoint-78d7c3bef4024722642626fe3669a799/fcode-builtin.json",
+      "line": "              \"baseUrl\": \"https://zcode.z.ai/api/v1/off-peak/anthropic\"",
+      "category": "external",
+      "reason": "Existing deployed external endpoint or wire namespace"
+    },
+    {
+      "file": "apps/desktop/example-base/.fcode/v2/runtime/provider/windows-x86_64/0.0.0-dev/endpoint-78d7c3bef4024722642626fe3669a799/fcode-builtin.json",
+      "line": "          \"baseUrlMatch\": \"https://zcode\\\\.z\\\\.ai/api/v1/zcode-plan/anthropic/?\"",
+      "category": "external",
+      "reason": "Existing deployed external endpoint or wire namespace"
+    },
+    {
+      "file": "apps/desktop/example-base/.fcode/v2/runtime/provider/windows-x86_64/0.0.0-dev/endpoint-78d7c3bef4024722642626fe3669a799/fcode-builtin.json",
+      "line": "          \"baseUrlMatch\": \"https://zcode\\\\.z\\\\.ai/api/v1/zcode-plan/anthropic/?\",",
+      "category": "external",
+      "reason": "Existing deployed external endpoint or wire namespace"
+    },
+    {
+      "file": "apps/desktop/example-base/.fcode/v2/runtime/provider/windows-x86_64/0.0.0-dev/endpoint-78d7c3bef4024722642626fe3669a799/fcode-builtin.json",
+      "line": "          \"baseUrlMatch\": \"https://zcode\\\\.z\\\\.ai/api/v1/off-peak/anthropic/?\",",
+      "category": "external",
+      "reason": "Existing deployed external endpoint or wire namespace"
+    },
+    {
+      "file": "apps/desktop/example-custom/.fcode/v2/runtime/provider/windows-x86_64/0.0.0-dev/endpoint-78d7c3bef4024722642626fe3669a799/fcode-builtin.json",
+      "line": "              \"baseUrl\": \"https://zcode.z.ai/api/v1/zcode-plan/anthropic\"",
+      "category": "external",
+      "reason": "Existing deployed external endpoint or wire namespace"
+    },
+    {
+      "file": "apps/desktop/example-custom/.fcode/v2/runtime/provider/windows-x86_64/0.0.0-dev/endpoint-78d7c3bef4024722642626fe3669a799/fcode-builtin.json",
+      "line": "              \"baseUrl\": \"https://zcode.z.ai/api/v1/zcode-plan/anthropic\"",
+      "category": "external",
+      "reason": "Existing deployed external endpoint or wire namespace"
+    },
+    {
+      "file": "apps/desktop/example-custom/.fcode/v2/runtime/provider/windows-x86_64/0.0.0-dev/endpoint-78d7c3bef4024722642626fe3669a799/fcode-builtin.json",
+      "line": "              \"baseUrl\": \"https://zcode.z.ai/api/v1/off-peak/anthropic\"",
+      "category": "external",
+      "reason": "Existing deployed external endpoint or wire namespace"
+    },
+    {
+      "file": "apps/desktop/example-custom/.fcode/v2/runtime/provider/windows-x86_64/0.0.0-dev/endpoint-78d7c3bef4024722642626fe3669a799/fcode-builtin.json",
+      "line": "              \"baseUrl\": \"https://zcode.z.ai/api/v1/off-peak/anthropic\"",
+      "category": "external",
+      "reason": "Existing deployed external endpoint or wire namespace"
+    },
+    {
+      "file": "apps/desktop/example-custom/.fcode/v2/runtime/provider/windows-x86_64/0.0.0-dev/endpoint-78d7c3bef4024722642626fe3669a799/fcode-builtin.json",
+      "line": "          \"baseUrlMatch\": \"https://zcode\\\\.z\\\\.ai/api/v1/zcode-plan/anthropic/?\"",
+      "category": "external",
+      "reason": "Existing deployed external endpoint or wire namespace"
+    },
+    {
+      "file": "apps/desktop/example-custom/.fcode/v2/runtime/provider/windows-x86_64/0.0.0-dev/endpoint-78d7c3bef4024722642626fe3669a799/fcode-builtin.json",
+      "line": "          \"baseUrlMatch\": \"https://zcode\\\\.z\\\\.ai/api/v1/zcode-plan/anthropic/?\",",
+      "category": "external",
+      "reason": "Existing deployed external endpoint or wire namespace"
+    },
+    {
+      "file": "apps/desktop/example-custom/.fcode/v2/runtime/provider/windows-x86_64/0.0.0-dev/endpoint-78d7c3bef4024722642626fe3669a799/fcode-builtin.json",
+      "line": "          \"baseUrlMatch\": \"https://zcode\\\\.z\\\\.ai/api/v1/off-peak/anthropic/?\",",
+      "category": "external",
+      "reason": "Existing deployed external endpoint or wire namespace"
+    },
+    {
+      "file": "apps/desktop/packages/services/src/model-provider/legacyFCodeConfigProviderReader.ts",
+      "line": "  if (path.includes(\"/api/anthropic\") || path.includes(\"/zcode-plan/anthropic\")) {",
+      "category": "external",
+      "reason": "Existing deployed external endpoint or wire namespace"
+    },
+    {
+      "file": "apps/desktop/packages/shared/src/branding-compatibility.ts",
+      "line": "export const LEGACY_BRAND = \"zcode\";",
+      "category": "compatibility",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/packages/shared/src/branding-compatibility.ts",
+      "line": "export const LEGACY_ENV_PREFIX = \"ZCODE_\";",
+      "category": "compatibility",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/packages/shared/src/branding-compatibility.ts",
+      "line": "export const LEGACY_PRODUCT_DIRECTORY = \".zcode\";",
+      "category": "compatibility",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/packages/shared/src/branding-compatibility.ts",
+      "line": "export const LEGACY_PLUGIN_DIRECTORY = \".zcode-plugin\";",
+      "category": "compatibility",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/packages/shared/src/branding-paths.ts",
+      "line": "  const legacy = join(root, \".zcode-plugin\", \"plugin.json\");",
+      "category": "compatibility",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/packages/shared/src/fcodeEndpoint.ts",
+      "line": "export const DEFAULT_FCODE_ENDPOINT_ORIGIN = \"https://zcode.z.ai\";",
+      "category": "external",
+      "reason": "Existing deployed external endpoint or wire namespace"
+    },
+    {
+      "file": "apps/desktop/packages/shared/src/fcodeEndpoint.ts",
+      "line": "    fcodePlanOpenAiBaseUrl: `${normalizedOrigin}/api/v1/zcode-plan`,",
+      "category": "external",
+      "reason": "Existing deployed external endpoint or wire namespace"
+    },
+    {
+      "file": "apps/desktop/packages/shared/src/fcodeEndpoint.ts",
+      "line": "    fcodePlanAnthropicBaseUrl: `${normalizedOrigin}/api/v1/zcode-plan/anthropic`,",
+      "category": "external",
+      "reason": "Existing deployed external endpoint or wire namespace"
+    },
+    {
+      "file": "apps/desktop/packages/shared/src/fcodeEndpoint.ts",
+      "line": "    fcodePlanBillingCurrentUrl: `${normalizedOrigin}/api/v1/zcode-plan/billing/current`,",
+      "category": "external",
+      "reason": "Existing deployed external endpoint or wire namespace"
+    },
+    {
+      "file": "apps/desktop/packages/shared/src/fcodeEndpoint.ts",
+      "line": "    fcodePlanBillingBalanceUrl: `${normalizedOrigin}/api/v1/zcode-plan/billing/balance`,",
+      "category": "external",
+      "reason": "Existing deployed external endpoint or wire namespace"
+    },
+    {
+      "file": "apps/desktop/scripts/check-branding-residuals.mjs",
+      "line": "const legacyPattern = /zcode/gi;",
+      "category": "compatibility",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/scripts/check-branding-residuals.mjs",
+      "line": "  if (/zcode/i.test(file)) {",
+      "category": "compatibility",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/.gitignore",
+      "line": ".zcode-runtime/",
+      "category": "compatibility",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/.gitignore",
+      "line": "/.zcode-local-data/",
+      "category": "compatibility",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/apps/fcode-cli/packages/adapters/src/auth/cli-oauth.ts",
+      "line": "const DEFAULT_FCODE_OAUTH_BASE_URL = \"https://zcode.z.ai/api/v1\";",
+      "category": "external",
+      "reason": "Existing deployed external endpoint or wire namespace"
+    },
+    {
+      "file": "apps/desktop/apps/fcode-cli/packages/adapters/src/model/official-coding-plan-gateway.ts",
+      "line": " * 缺省为线上 https://zcode.z.ai。",
+      "category": "external",
+      "reason": "Existing deployed external endpoint or wire namespace"
+    },
+    {
+      "file": "apps/desktop/apps/fcode-cli/packages/bootstrap/src/app/official-plugin-definitions.ts",
+      "line": "const OFFICIAL_PLUGIN_ASSETS_BASE_URL = \"https://cdn-zcode.z.ai/zcode/official-plugin/assets\";",
+      "category": "external",
+      "reason": "Existing deployed external endpoint or wire namespace"
+    },
+    {
+      "file": "apps/desktop/apps/fcode-cli/packages/contracts/src/hooks/workspace-hook-trust.ts",
+      "line": "              \"zcode.json\",",
+      "category": "compatibility",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/apps/fcode-cli/packages/contracts/src/hooks/workspace-hook-trust.ts",
+      "line": "              \".zcode/config.json\",",
+      "category": "compatibility",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/apps/fcode-cli/packages/contracts/src/hooks/workspace-hook-trust.ts",
+      "line": "              kind === \"zcode.json\"",
+      "category": "compatibility",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/apps/fcode-cli/packages/contracts/src/hooks/workspace-hook-trust.ts",
+      "line": "                : kind === \".zcode/config.json\"",
+      "category": "compatibility",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/config/provider/fcode-builtin.json",
+      "line": "          \"baseUrlMatch\": \"https://zcode\\\\.z\\\\.ai/api/v1/zcode-plan/anthropic/?\",",
+      "category": "external",
+      "reason": "Existing deployed external endpoint or wire namespace"
+    },
+    {
+      "file": "apps/desktop/config/provider/fcode-builtin.json",
+      "line": "          \"baseUrlMatch\": \"https://zcode\\\\.z\\\\.ai/api/v1/zcode-plan/anthropic/?\",",
+      "category": "external",
+      "reason": "Existing deployed external endpoint or wire namespace"
+    },
+    {
+      "file": "apps/desktop/config/provider/fcode-builtin.json",
+      "line": "          \"baseUrlMatch\": \"https://zcode\\\\.z\\\\.ai/api/v1/off-peak/anthropic/?\",",
+      "category": "external",
+      "reason": "Existing deployed external endpoint or wire namespace"
+    },
+    {
+      "file": "apps/desktop/packages/desktop/build/installer.nsh",
+      "line": "      IfFileExists \"$R9\\.zcode\\*.*\" 0 +2",
+      "category": "compatibility",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/packages/desktop/build/installer.nsh",
+      "line": "        StrCpy $R2 \"$R9\\.zcode\"",
+      "category": "compatibility",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/packages/desktop/build/installer.nsh",
+      "line": "      IfFileExists \"$R9\\.zcode\" 0 +2",
+      "category": "compatibility",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/packages/desktop/build/installer.nsh",
+      "line": "        StrCpy $R2 \"$R9\\.zcode\"",
+      "category": "compatibility",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/packages/desktop/electron-builder.config.js",
+      "line": "      schemes: [\"fcode\", \"zcode\"], // 历史 OAuth/分享链接的只读兼容入口。",
+      "category": "compatibility",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/packages/desktop/src/main/mcpUserDirectory/legacy.ts",
+      "line": "  candidates.push(join(appData, \"ai.z.zcode\", \"store.json\"));",
+      "category": "compatibility",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/packages/desktop/src/main/remoteCdn.ts",
+      "line": "const DEFAULT_CDN_BASE_URL = \"https://cdn-zcode.z.ai\";",
+      "category": "external",
+      "reason": "Existing deployed external endpoint or wire namespace"
+    },
+    {
+      "file": "apps/desktop/packages/desktop/src/main/remoteCdn.ts",
+      "line": "    `${normalizeBaseUrl(baseUrl)}/zcode/electron/releases/${options.version ?? FCODE_VERSION}`,",
+      "category": "external",
+      "reason": "Existing deployed external endpoint or wire namespace"
+    },
+    {
+      "file": "apps/desktop/packages/services/src/conversation-share/conversationShareService.ts",
+      "line": "    // 兜底写死生产站 https://zcode.z.ai/cn/share，于是测试环境（API base 走",
+      "category": "external",
+      "reason": "Existing deployed external endpoint or wire namespace"
+    },
+    {
+      "file": "apps/desktop/packages/services/src/oauth/providers/bigmodelProviderConfig.ts",
+      "line": "  tokenUrl: \"https://zcode.z.ai/api/v1/oauth/token\",",
+      "category": "external",
+      "reason": "Existing deployed external endpoint or wire namespace"
+    },
+    {
+      "file": "apps/desktop/packages/services/src/oauth/providers/bigmodelProviderConfig.ts",
+      "line": "  appId: \"zcode\",",
+      "category": "external",
+      "reason": "Existing deployed external endpoint or wire namespace"
+    },
+    {
+      "file": "apps/desktop/packages/services/src/oauth/providers/zaiProviderConfig.ts",
+      "line": "  tokenUrl: \"https://zcode.z.ai/api/v1/oauth/token\",",
+      "category": "external",
+      "reason": "Existing deployed external endpoint or wire namespace"
+    },
+    {
+      "file": "apps/desktop/packages/shared/src/plugin-marketplaces.ts",
+      "line": "    source: \"https://cdn-zcode.z.ai/zcode/official-plugin/marketplace.json\",",
+      "category": "external",
+      "reason": "Existing deployed external endpoint or wire namespace"
+    },
+    {
+      "file": "apps/desktop/packages/ui/src/components/ai-elements/agent.tsx",
+      "line": " * Modified by ZCode: local integration, formatting and adaptations.",
+      "category": "attribution",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/packages/ui/src/components/ai-elements/artifact.tsx",
+      "line": " * Modified by ZCode: local integration, formatting and adaptations.",
+      "category": "attribution",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/packages/ui/src/components/ai-elements/attachments.tsx",
+      "line": " * Modified by ZCode: local integration, formatting and adaptations.",
+      "category": "attribution",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/packages/ui/src/components/ai-elements/checkpoint.tsx",
+      "line": " * Modified by ZCode: local integration, formatting and adaptations.",
+      "category": "attribution",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/packages/ui/src/components/ai-elements/code-block.tsx",
+      "line": " * Modified by ZCode: local integration, formatting and adaptations.",
+      "category": "attribution",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/packages/ui/src/components/ai-elements/commit.tsx",
+      "line": " * Modified by ZCode: local integration, formatting and adaptations.",
+      "category": "attribution",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/packages/ui/src/components/ai-elements/confirmation.tsx",
+      "line": " * Modified by ZCode: local integration, formatting and adaptations.",
+      "category": "attribution",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/packages/ui/src/components/ai-elements/connection.tsx",
+      "line": " * Modified by ZCode: local integration, formatting and adaptations.",
+      "category": "attribution",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/packages/ui/src/components/ai-elements/context.tsx",
+      "line": " * Modified by ZCode: local integration, formatting and adaptations.",
+      "category": "attribution",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/packages/ui/src/components/ai-elements/controls.tsx",
+      "line": " * Modified by ZCode: local integration, formatting and adaptations.",
+      "category": "attribution",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/packages/ui/src/components/ai-elements/conversation.tsx",
+      "line": " * Modified by ZCode: local integration, formatting and adaptations.",
+      "category": "attribution",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/packages/ui/src/components/ai-elements/edge.tsx",
+      "line": " * Modified by ZCode: local integration, formatting and adaptations.",
+      "category": "attribution",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/packages/ui/src/components/ai-elements/image.tsx",
+      "line": " * Modified by ZCode: local integration, formatting and adaptations.",
+      "category": "attribution",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/packages/ui/src/components/ai-elements/message.tsx",
+      "line": " * Modified by ZCode: local integration, formatting and adaptations.",
+      "category": "attribution",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/packages/ui/src/components/ai-elements/node.tsx",
+      "line": " * Modified by ZCode: local integration, formatting and adaptations.",
+      "category": "attribution",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/packages/ui/src/components/ai-elements/panel.tsx",
+      "line": " * Modified by ZCode: local integration, formatting and adaptations.",
+      "category": "attribution",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/packages/ui/src/components/ai-elements/persona.tsx",
+      "line": " * Modified by ZCode: local integration, formatting and adaptations.",
+      "category": "attribution",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/packages/ui/src/components/ai-elements/plan.tsx",
+      "line": " * Modified by ZCode: local integration, formatting and adaptations.",
+      "category": "attribution",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/packages/ui/src/components/ai-elements/prompt-input-actions.tsx",
+      "line": " * Modified by ZCode: split components and adapt local imports and behavior.",
+      "category": "attribution",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/packages/ui/src/components/ai-elements/prompt-input-buttons.tsx",
+      "line": " * Modified by ZCode: split components and adapt local imports and behavior.",
+      "category": "attribution",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/packages/ui/src/components/ai-elements/prompt-input-primitives.tsx",
+      "line": " * Modified by ZCode: split components and adapt local imports and behavior.",
+      "category": "attribution",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/packages/ui/src/components/ai-elements/prompt-input-textarea.tsx",
+      "line": " * Modified by ZCode: split components and adapt local imports and behavior.",
+      "category": "attribution",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/packages/ui/src/components/ai-elements/prompt-input.tsx",
+      "line": " * Modified by ZCode: local integration, formatting and adaptations.",
+      "category": "attribution",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/packages/ui/src/components/ai-elements/queue.tsx",
+      "line": " * Modified by ZCode: local integration, formatting and adaptations.",
+      "category": "attribution",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/packages/ui/src/components/ai-elements/reasoning.tsx",
+      "line": " * Modified by ZCode: local integration, formatting and adaptations.",
+      "category": "attribution",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/packages/ui/src/components/ai-elements/sandbox.tsx",
+      "line": " * Modified by ZCode: local integration, formatting and adaptations.",
+      "category": "attribution",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/packages/ui/src/components/ai-elements/shimmer.tsx",
+      "line": " * Modified by ZCode: local integration, formatting and adaptations.",
+      "category": "attribution",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/packages/ui/src/components/ai-elements/snippet.tsx",
+      "line": " * Modified by ZCode: local integration, formatting and adaptations.",
+      "category": "attribution",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/packages/ui/src/components/ai-elements/sources.tsx",
+      "line": " * Modified by ZCode: local integration, formatting and adaptations.",
+      "category": "attribution",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/packages/ui/src/components/ai-elements/suggestion.tsx",
+      "line": " * Modified by ZCode: local integration, formatting and adaptations.",
+      "category": "attribution",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/packages/ui/src/components/ai-elements/task.tsx",
+      "line": " * Modified by ZCode: local integration, formatting and adaptations.",
+      "category": "attribution",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/packages/ui/src/components/ai-elements/terminal.tsx",
+      "line": " * Modified by ZCode: local integration, formatting and adaptations.",
+      "category": "attribution",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/packages/ui/src/components/ai-elements/test-results.tsx",
+      "line": " * Modified by ZCode: local integration, formatting and adaptations.",
+      "category": "attribution",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/packages/ui/src/components/ai-elements/tool.tsx",
+      "line": " * Modified by ZCode: local integration, formatting and adaptations.",
+      "category": "attribution",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/packages/ui/src/components/ai-elements/toolbar.tsx",
+      "line": " * Modified by ZCode: local integration, formatting and adaptations.",
+      "category": "attribution",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/packages/ui/src/settings/model-provider-section/codingPlanEmbeddedWebview.ts",
+      "line": "const CODING_PLAN_REPORT_CONTEXT_STORAGE_KEY = \"zcode:coding-plan:report-context\";",
+      "category": "external",
+      "reason": "Existing deployed external endpoint or wire namespace"
+    },
+    {
+      "file": "apps/desktop/packages/ui/src/settings/model-provider-section/codingPlanEmbeddedWebview.ts",
+      "line": "  localStorage.setItem(\"zcode-theme\", fcodeTheme);",
+      "category": "external",
+      "reason": "Existing deployed external endpoint or wire namespace"
+    },
+    {
+      "file": "apps/desktop/packages/ui/src/settings/model-provider-section/codingPlanEmbeddedWebview.ts",
+      "line": "  localStorage.setItem(\"zcode:coding-plan:embedded\", \"app\");",
+      "category": "external",
+      "reason": "Existing deployed external endpoint or wire namespace"
+    },
+    {
+      "file": "apps/desktop/packages/ui/src/settings/model-provider-section/codingPlanEmbeddedWebview.ts",
+      "line": "  window.dispatchEvent(new CustomEvent(\"zcode-coding-plan-auth-ready\", {",
+      "category": "external",
+      "reason": "Existing deployed external endpoint or wire namespace"
+    },
+    {
+      "file": "apps/desktop/packages/ui/src/settings/model-provider-section/codingPlanEmbeddedWebview.ts",
+      "line": "  const styleId = \"zcode-coding-plan-hide-scrollbar\";",
+      "category": "external",
+      "reason": "Existing deployed external endpoint or wire namespace"
+    },
+    {
+      "file": "apps/desktop/packages/ui/src/settings/model-provider-section/codingPlanEmbeddedWebview.ts",
+      "line": "  window.dispatchEvent(new CustomEvent(\"zcode-coding-plan-lang-change\", {",
+      "category": "external",
+      "reason": "Existing deployed external endpoint or wire namespace"
+    },
+    {
+      "file": "apps/desktop/packages/ui/src/v4/featureSuggestedPrompts.ts",
+      "line": "const ASSETS = \"https://cdn-zcode.z.ai/zcode/official-plugin/assets\";",
+      "category": "external",
+      "reason": "Existing deployed external endpoint or wire namespace"
+    },
+    {
+      "file": "apps/desktop/scripts/generate-third-party-notices.mjs",
+      "line": "      if (!(await readFile(join(root, file), \"utf8\")).includes(\"Modified by ZCode:\"))",
+      "category": "attribution",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "apps/desktop/scripts/generate-third-party-notices.mjs",
+      "line": "        `- ${item.package}: locally patched with reference to the ZCode project; the changes are recorded in ${item.file} in the source repository.`,",
+      "category": "attribution",
+      "reason": "Explicit historical read/migration guard"
+    },
+    {
+      "file": "README.en.md",
+      "line": "FCode references the design and implementation of the ZCode project. We thank the ZCode project and its contributors.",
+      "category": "attribution",
+      "reason": "Intentional acknowledgement that the project references the ZCode project"
+    },
+    {
+      "file": "README.en.md",
+      "line": "This is an independently maintained project and is not affiliated with or endorsed by the ZCode project or its owners. \"ZCode\", \"z.ai\" and related names and marks belong to their respective owners.",
+      "category": "attribution",
+      "reason": "Intentional acknowledgement that the project references the ZCode project"
+    },
+    {
+      "file": "README.md",
+      "line": "FCode 在设计与实现上参考了 ZCode 项目，在此向 ZCode 项目及其贡献者致谢。",
+      "category": "attribution",
+      "reason": "Intentional acknowledgement that the project references the ZCode project"
+    },
+    {
+      "file": "README.md",
+      "line": "本项目为独立维护的项目，与 ZCode 项目及其所属公司没有隶属或官方合作关系；“ZCode”“z.ai”等名称和标识归其各自权利人所有。",
+      "category": "attribution",
+      "reason": "Intentional acknowledgement that the project references the ZCode project"
+    }
+  ]
+}

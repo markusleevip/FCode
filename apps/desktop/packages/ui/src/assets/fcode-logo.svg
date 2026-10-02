@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="520" viewBox="0 0 1440 520" role="img" aria-labelledby="title desc">
+  <title id="title">FCode logo</title>
+  <desc id="desc">A luminous angular F made of code paths beside the FCode wordmark.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0C1426"/>
+      <stop offset="1" stop-color="#111B32"/>
+    </linearGradient>
+    <linearGradient id="symbol" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#42E5CC"/>
+      <stop offset="0.53" stop-color="#53B9F5"/>
+      <stop offset="1" stop-color="#8586F6"/>
+    </linearGradient>
+    <linearGradient id="edge" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#62E5D2" stop-opacity="0.46"/>
+      <stop offset="1" stop-color="#8586F6" stop-opacity="0.20"/>
+    </linearGradient>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="20"/>
+    </filter>
+  </defs>
+  <rect width="1440" height="520" rx="36" fill="url(#background)"/>
+  <circle cx="232" cy="260" r="159" fill="#2B77B4" opacity="0.10" filter="url(#glow)"/>
+  <rect x="86" y="86" width="348" height="348" rx="82" fill="#15253A" stroke="url(#edge)" stroke-width="2"/>
+  <path d="M184 330 V190 Q184 177 197 177 H330" fill="none" stroke="url(#symbol)" stroke-width="31" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M184 256 H284" fill="none" stroke="url(#symbol)" stroke-width="31" stroke-linecap="round"/>
+  <circle cx="330" cy="177" r="16" fill="#72E7D1"/>
+  <circle cx="284" cy="256" r="16" fill="#7D9FF7"/>
+  <path d="M310 311 L321 335 L345 346 L321 357 L310 381 L299 357 L275 346 L299 335 Z" fill="#77B8F8"/>
+  <text x="503" y="263" fill="#F5F8FF" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="104" font-weight="750" letter-spacing="-5">F<tspan fill="#71D8D6">Code</tspan></text>
+  <rect x="510" y="304" width="68" height="5" rx="2.5" fill="#64DCD4"/>
+  <text x="598" y="315" fill="#9EADC4" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="25" font-weight="500" letter-spacing="5">BUILD WITH INTELLIGENCE</text>
+</svg>

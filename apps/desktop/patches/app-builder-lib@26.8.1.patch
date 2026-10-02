@@ -1,0 +1,19 @@
+diff --git a/out/winPackager.js b/out/winPackager.js
+index ac1706f98ea50a3429afddd58e4b192dbde2540e..c26d529ddd6df2aeaa1d9321b53f74da56847d56 100644
+--- a/out/winPackager.js
++++ b/out/winPackager.js
+@@ -181,7 +181,13 @@ class WinPackager extends platformPackager_1.PlatformPackager {
+         }
+         const timer = (0, timer_1.time)("wine&sign");
+         // rcedit crashed of executed using wine, resourcehacker works
+-        if (process.platform === "win32" || process.platform === "darwin") {
++        if (process.platform === "win32") {
++            // 旧 Go 下载器忽略 toolsets，解压 macOS 符号链接时令普通 Windows 构建失败。
++            // 复用原参数及已校验的分平台 rcedit，后续签名仍由原 owner 执行。
++            const vendor = await (0, windows_1.getRceditBundle)((_c = this.config.toolsets) === null || _c === void 0 ? void 0 : _c.winCodeSign);
++            await (0, builder_util_1.exec)(process.arch === "x64" ? vendor.x64 : vendor.x86, args);
++        }
++        else if (process.platform === "darwin") {
+             await (0, builder_util_1.executeAppBuilder)(["rcedit", "--args", JSON.stringify(args)], undefined /* child-process */, {}, 3 /* retry three times */);
+         }
+         else if (this.info.framework.name === "electron") {

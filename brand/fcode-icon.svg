@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">FCode app icon</title>
+  <desc id="desc">An angular F made of luminous code paths on a navy rounded square.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#152B43"/>
+      <stop offset="1" stop-color="#131A34"/>
+    </linearGradient>
+    <linearGradient id="symbol" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#42E5CC"/>
+      <stop offset="0.55" stop-color="#53B9F5"/>
+      <stop offset="1" stop-color="#8586F6"/>
+    </linearGradient>
+  </defs>
+  <rect x="24" y="24" width="464" height="464" rx="108" fill="url(#background)" stroke="#3C6780" stroke-opacity="0.75" stroke-width="4"/>
+  <path d="M162 368 V166 Q162 147 181 147 H370" fill="none" stroke="url(#symbol)" stroke-width="43" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M162 260 H302" fill="none" stroke="url(#symbol)" stroke-width="43" stroke-linecap="round"/>
+  <circle cx="370" cy="147" r="22" fill="#72E7D1"/>
+  <circle cx="302" cy="260" r="22" fill="#7D9FF7"/>
+  <path d="M343 328 L357 359 L388 373 L357 387 L343 418 L329 387 L298 373 L329 359 Z" fill="#77B8F8"/>
+</svg>

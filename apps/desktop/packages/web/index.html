@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#161616" />
+    <meta name="color-scheme" content="dark" />
+    <!-- Chrome dev 下可能不发 favicon 网络请求；内嵌小尺寸 App 图标，避免标签页回退到默认图标。-->
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22512%22%20height%3D%22512%22%20viewBox%3D%220%200%20512%20512%22%20role%3D%22img%22%20aria-labelledby%3D%22title%20desc%22%3E%0A%20%20%3Ctitle%20id%3D%22title%22%3EFelixCode%20app%20icon%3C%2Ftitle%3E%0A%20%20%3Cdesc%20id%3D%22desc%22%3EAn%20angular%20F%20made%20of%20luminous%20code%20paths%20on%20a%20navy%20rounded%20square.%3C%2Fdesc%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22background%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23152B43%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23131A34%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22symbol%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%22%20stop-color%3D%22%2342E5CC%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220.55%22%20stop-color%3D%22%2353B9F5%22%2F%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%221%22%20stop-color%3D%22%238586F6%22%2F%3E%0A%20%20%20%20%3C%2FlinearGradient%3E%0A%20%20%3C%2Fdefs%3E%0A%20%20%3Crect%20x%3D%2224%22%20y%3D%2224%22%20width%3D%22464%22%20height%3D%22464%22%20rx%3D%22108%22%20fill%3D%22url(%23background)%22%20stroke%3D%22%233C6780%22%20stroke-opacity%3D%220.75%22%20stroke-width%3D%224%22%2F%3E%0A%20%20%3Cpath%20d%3D%22M162%20368%20V166%20Q162%20147%20181%20147%20H370%22%20fill%3D%22none%22%20stroke%3D%22url(%23symbol)%22%20stroke-width%3D%2243%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%0A%20%20%3Cpath%20d%3D%22M162%20260%20H302%22%20fill%3D%22none%22%20stroke%3D%22url(%23symbol)%22%20stroke-width%3D%2243%22%20stroke-linecap%3D%22round%22%2F%3E%0A%20%20%3Ccircle%20cx%3D%22370%22%20cy%3D%22147%22%20r%3D%2222%22%20fill%3D%22%2372E7D1%22%2F%3E%0A%20%20%3Ccircle%20cx%3D%22302%22%20cy%3D%22260%22%20r%3D%2222%22%20fill%3D%22%237D9FF7%22%2F%3E%0A%20%20%3Cpath%20d%3D%22M343%20328%20L357%20359%20L388%20373%20L357%20387%20L343%20418%20L329%20387%20L298%20373%20L329%20359%20Z%22%20fill%3D%22%2377B8F8%22%2F%3E%0A%3C%2Fsvg%3E"
+    />
+    <title>FelixCode</title>
+    <script>
+      (() => {
+        // JS bundle 执行前先按本地主题偏好决定首屏底色，避免 dark 用户在这一帧看到白底闪烁。
+        const STORAGE_KEY = "fcode-theme";
+        const DEFAULT_THEME = "zai-dark";
+        const BROWSER_THEME_COLORS = {
+          dark: "#161616",
+          light: "#f8f8f8",
+        };
+
+        const normalizeResolvedTheme = (theme) => {
+          if (theme === "dark") return "dark";
+          if (theme === "light") return "light";
+          if (theme === "zai-dark") return "dark";
+          if (theme === "zai-light") return "light";
+          return theme;
+        };
+
+        const syncBrowserThemeSurface = (theme) => {
+          document.documentElement.setAttribute("data-fcode-browser-theme-surface", theme);
+          document.documentElement.style.colorScheme = theme;
+          document
+            .querySelector('meta[name="theme-color"]')
+            ?.setAttribute("content", BROWSER_THEME_COLORS[theme]);
+          document.querySelector('meta[name="color-scheme"]')?.setAttribute("content", theme);
+        };
+
+        try {
+          const saved = localStorage.getItem(STORAGE_KEY) || DEFAULT_THEME;
+          const resolved =
+            saved === "system"
+              ? window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches
+                ? "dark"
+                : "light"
+              : normalizeResolvedTheme(saved);
+          const finalTheme = resolved === "dark" ? "dark" : "light";
+          document.documentElement.setAttribute("data-fcode-bootstrap-theme", finalTheme);
+          syncBrowserThemeSurface(finalTheme);
+          if (finalTheme === "dark") {
+            document.documentElement.classList.add("dark");
+          }
+        } catch {
+          document.documentElement.setAttribute("data-fcode-bootstrap-theme", "dark");
+          syncBrowserThemeSurface("dark");
+          document.documentElement.classList.add("dark");
+        }
+      })();
+    </script>
+    <style>
+      html,
+      body,
+      #root {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+      }
+
+      body {
+        background: var(--fcode-bootstrap-bg, var(--color-background, #0f172a));
+        color: var(--fcode-bootstrap-fg, var(--color-foreground, #e2e8f0));
+        font-family:
+          Inter,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+      }
+
+      html[data-fcode-bootstrap-theme="light"] body {
+        background: var(--fcode-bootstrap-bg, var(--color-background, #f8fafc));
+        color: var(--fcode-bootstrap-fg, var(--color-foreground, #334155));
+      }
+
+      html[data-fcode-browser-theme-surface],
+      html[data-fcode-browser-theme-surface] body,
+      html[data-fcode-browser-theme-surface] #root {
+        /* 共享 UI 样式为 Electron vibrancy 强制透明根背景；浏览器入口必须用语义背景
+           覆盖该桌面专属行为，否则浏览器工具栏、overscroll 和页面画布会回退为系统白色。 */
+        background: var(--color-background, var(--fcode-bootstrap-bg, #161616)) !important;
+      }
+
+      html[data-fcode-browser-theme-surface="light"],
+      html[data-fcode-browser-theme-surface="light"] body,
+      html[data-fcode-browser-theme-surface="light"] #root {
+        background: var(--color-background, var(--fcode-bootstrap-bg, #f8f8f8)) !important;
+      }
+
+      .fcode-boot-loading {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        /* UI 全局样式会把 body/#root 置为透明，预渲染壳必须自己承接主题背景，否则深色主题会露出浏览器白底。*/
+        background: var(--fcode-bootstrap-bg, var(--color-background, #0f172a));
+        color: var(--fcode-bootstrap-fg, var(--color-foreground, #e2e8f0));
+      }
+
+      html[data-fcode-bootstrap-theme="light"] .fcode-boot-loading {
+        background: var(--fcode-bootstrap-bg, var(--color-background, #f8fafc));
+        color: var(--fcode-bootstrap-fg, var(--color-foreground, #334155));
+      }
+
+      .fcode-boot-loading__logo-shell {
+        position: relative;
+        display: flex;
+        width: 96px;
+        height: 96px;
+        align-items: center;
+        justify-content: center;
+        border-radius: 24px;
+        background: transparent;
+        box-shadow:
+          0 20px 25px -5px rgb(0 0 0 / 0.2),
+          0 8px 10px -6px rgb(0 0 0 / 0.2);
+      }
+
+      .fcode-boot-loading__logo-shell::before {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        content: "";
+        /* 启动 logo 壳是固定深色底，边框不能跟随浅色主题 token，否则首屏边框过重。*/
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: inherit;
+      }
+
+      .fcode-boot-loading__logo {
+        width: 96px;
+        height: 96px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root">
+      <!-- 远程控制跨 workspace 时会整页跳转；在 JS 入口执行前先给出 loading 壳，避免出现白屏空档。-->
+      <div
+        class="fcode-boot-loading"
+        role="status"
+        aria-live="polite"
+        aria-busy="true"
+        aria-label="Loading..."
+      >
+        <div class="fcode-boot-loading__logo-shell">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 512 512"
+            class="fcode-boot-loading__logo"
+            aria-hidden="true"
+          >
+            <defs>
+              <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#152B43" />
+                <stop offset="1" stop-color="#131A34" />
+              </linearGradient>
+              <linearGradient id="symbol" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#42E5CC" />
+                <stop offset="0.55" stop-color="#53B9F5" />
+                <stop offset="1" stop-color="#8586F6" />
+              </linearGradient>
+            </defs>
+            <animate attributeName="opacity" dur="1.5s" repeatCount="indefinite" values="1;0.7;1" />
+            <rect
+              x="24"
+              y="24"
+              width="464"
+              height="464"
+              rx="108"
+              fill="url(#background)"
+              stroke="#3C6780"
+              stroke-opacity="0.75"
+              stroke-width="4"
+            />
+            <path
+              d="M162 368 V166 Q162 147 181 147 H370"
+              fill="none"
+              stroke="url(#symbol)"
+              stroke-width="43"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+            <path
+              d="M162 260 H302"
+              fill="none"
+              stroke="url(#symbol)"
+              stroke-width="43"
+              stroke-linecap="round"
+            />
+            <circle cx="370" cy="147" r="22" fill="#72E7D1" />
+            <circle cx="302" cy="260" r="22" fill="#7D9FF7" />
+            <path
+              d="M343 328 L357 359 L388 373 L357 387 L343 418 L329 387 L298 373 L329 359 Z"
+              fill="#77B8F8"
+            />
+          </svg>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,34 @@
+import {
+  FileDiffIcon,
+  FolderOpenIcon,
+  GlobeIcon,
+  LogInIcon,
+  LogOutIcon,
+  MessageCirclePlus,
+  MoonIcon,
+  PanelLeftClose,
+  PanelLeftOpen,
+  ServerIcon,
+  SettingsIcon,
+  SquareTerminalIcon,
+  SunIcon,
+  WandSparkles,
+} from "lucide-react";
+import type { QuickPickCommandIcon } from "@/quickpick/quickPickCommands.js";
+
+export const QUICK_PICK_ICON_BY_KIND = {
+  browser: GlobeIcon,
+  diff: FileDiffIcon,
+  folder: FolderOpenIcon,
+  login: LogInIcon,
+  logout: LogOutIcon,
+  message: MessageCirclePlus,
+  mcp: ServerIcon,
+  settings: SettingsIcon,
+  sidebarClose: PanelLeftClose,
+  sidebarOpen: PanelLeftOpen,
+  skills: WandSparkles,
+  themeDark: MoonIcon,
+  themeLight: SunIcon,
+  terminal: SquareTerminalIcon,
+} satisfies Record<QuickPickCommandIcon, typeof MessageCirclePlus>;

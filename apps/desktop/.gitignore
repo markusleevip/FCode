@@ -1,0 +1,82 @@
+node_modules/
+dist/
+# server-cli release staging output; locally assembled artifacts are not committed.
+dist-release/
+# macOS CI isolates electron-builder output directories per architecture; these are still build artifacts.
+packages/desktop/dist-*/
+out/
+prebuilds/
+bundled-resources/
+mock-cdn/
+packages/desktop/bundled-resources/
+packages/desktop/bundled-agents/
+packages/desktop/bundled-tools/
+packages/desktop/mock-cdn/
+*.tsbuildinfo
+.DS_Store
+coverage/
+.env.local
+.env.*.local
+.env
+.VSCodeCounter
+.idea/
+.zed/
+.cache
+# CI keeps these download caches across jobs; they must not show up as untracked source files.
+/.electron-builder-cache/
+/.electron-cache/
+/.pnpm-store/
+/.npm-cache/
+.turbo/
+z-work/
+openclaw/
+.run-logs/
+.worktrees/
+packages/stream-animate/dist-server/
+packages/stream-animate/.stream-animate-data/
+.codegraph
+.mimosa/
+# An integration branch once picked up node-gyp build artifacts and temporary .playwright-mcp snapshots;
+# CI rejects them at the first stage (scripts/ci/ci-repo-hygiene.mjs); ignore them here so a local git add skips them too.
+.playwright-mcp/
+*.o
+.deps/
+obj.target/
+config.gypi
+gyp-mac-tool
+*.target.mk
+binding.Makefile
+# These two used to be written as build/Makefile and build/Release/*.node; a pattern with a middle slash
+# only applies relative to the directory of this .gitignore (the repository root), so it missed artifacts under packages/ax-macos/build/;
+# the ci-repo-hygiene.mjs denylist uses (^|/)build/... and matches at any depth.
+# When the two disagree, artifacts that a slash-free pattern would have blocked get swept back into the index by git add -A.
+# Adding **/ aligns the ignore scope with the gate scope.
+**/build/Makefile
+**/build/Release/*.node
+
+# Swift helper binary used to snap the CUA permission panel (built by prepare:macos-window-bounds from
+# packages/desktop/native/macos-window-bounds/main.swift; the source is committed, the output is not).
+packages/desktop/resources/macos-window-bounds/
+# CUA Helper SEA base download cache (the official Node 22 runtime written by scripts/cua-helper-sea-base.mjs; download output only).
+/.tmp/
+# Python bytecode (generated when docker/plugin-eval/summarize.py runs on the host).
+__pycache__/
+*.pyc
+
+# Local tool output, all regenerable: desktop e2e screenshots, caches and network captures, and the
+# Electron download cache of the desktop dev runner.
+packages/desktop/.e2e-artifacts/
+packages/desktop/.e2e-cache/
+packages/desktop/.e2e-network-capture/
+.fcode-runtime/
+# Compatibility: preserve existing reproducible Electron cache exclusion.
+.zcode-runtime/
+# Local data used by run.cmd; never commit sessions or credentials.
+# Keep the previous directory ignored: existing data is not moved or deleted.
+/.fcode-local-data/
+/.zcode-local-data/
+/.felixcode-local-data/
+# Temporary tsup configuration emitted by local desktop builds.
+/packages/desktop/tsup.config.bundled_*.mjs
+# Local Windows toolchain location used by build.cmd, run.cmd and package.cmd.
+/toolchain.local.cmd

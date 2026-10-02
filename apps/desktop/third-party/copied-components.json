@@ -1,0 +1,376 @@
+[
+  {
+    "id": "shadcn",
+    "referenceRevision": "a87a63b2ca25143d26c8bd0903e4e9bc77b3f824",
+    "source": "https://raw.githubusercontent.com/shadcn-ui/ui/a87a63b2ca25143d26c8bd0903e4e9bc77b3f824/LICENSE.md",
+    "file": "third-party/upstream/1564074e13439397221ffd522e2e504d56561994a23d371aa5e3ad43e4f5423f.txt",
+    "sha256": "1564074e13439397221ffd522e2e504d56561994a23d371aa5e3ad43e4f5423f",
+    "importRevision": null,
+    "provenance": "The original copy revision is not recorded in the current checkout; this pinned license reference is not asserted to be the original import version.",
+    "roots": [
+      "packages/ui/src/components/ui",
+      "packages/ui/src/styles.css"
+    ],
+    "scope": "Upstream-derived portions only; ZCode-specific files in the same directory are not attributed to the upstream project.",
+    "license": "MIT"
+  },
+  {
+    "id": "ai-elements",
+    "referenceRevision": "6a9d5b1822ffb10bba4bd97175f01edd7d8651cd",
+    "source": "https://raw.githubusercontent.com/vercel/ai-elements/6a9d5b1822ffb10bba4bd97175f01edd7d8651cd/LICENSE",
+    "file": "third-party/upstream/b4f9adb7c568904834d0dd6cc98d16c390d21ca32fc17ae7a267715269bd5529.txt",
+    "sha256": "b4f9adb7c568904834d0dd6cc98d16c390d21ca32fc17ae7a267715269bd5529",
+    "importRevision": null,
+    "provenance": "The original copy revision is not recorded in the current checkout; this pinned license reference is not asserted to be the original import version.",
+    "roots": [
+      "packages/ui/src/components/ai-elements"
+    ],
+    "scope": "Upstream-derived UI components, skill instructions, reference documentation and example scripts only; locally adapted for ZCode imports, styling and agent workflow. Original import revision not recorded.",
+    "license": "Apache-2.0",
+    "modifiedFiles": [
+      "packages/ui/src/components/ai-elements/agent.tsx",
+      "packages/ui/src/components/ai-elements/artifact.tsx",
+      "packages/ui/src/components/ai-elements/attachments.tsx",
+      "packages/ui/src/components/ai-elements/checkpoint.tsx",
+      "packages/ui/src/components/ai-elements/code-block.tsx",
+      "packages/ui/src/components/ai-elements/commit.tsx",
+      "packages/ui/src/components/ai-elements/confirmation.tsx",
+      "packages/ui/src/components/ai-elements/connection.tsx",
+      "packages/ui/src/components/ai-elements/context.tsx",
+      "packages/ui/src/components/ai-elements/controls.tsx",
+      "packages/ui/src/components/ai-elements/conversation.tsx",
+      "packages/ui/src/components/ai-elements/edge.tsx",
+      "packages/ui/src/components/ai-elements/image.tsx",
+      "packages/ui/src/components/ai-elements/message.tsx",
+      "packages/ui/src/components/ai-elements/node.tsx",
+      "packages/ui/src/components/ai-elements/panel.tsx",
+      "packages/ui/src/components/ai-elements/persona.tsx",
+      "packages/ui/src/components/ai-elements/plan.tsx",
+      "packages/ui/src/components/ai-elements/prompt-input.tsx",
+      "packages/ui/src/components/ai-elements/queue.tsx",
+      "packages/ui/src/components/ai-elements/reasoning.tsx",
+      "packages/ui/src/components/ai-elements/sandbox.tsx",
+      "packages/ui/src/components/ai-elements/shimmer.tsx",
+      "packages/ui/src/components/ai-elements/snippet.tsx",
+      "packages/ui/src/components/ai-elements/sources.tsx",
+      "packages/ui/src/components/ai-elements/suggestion.tsx",
+      "packages/ui/src/components/ai-elements/task.tsx",
+      "packages/ui/src/components/ai-elements/terminal.tsx",
+      "packages/ui/src/components/ai-elements/test-results.tsx",
+      "packages/ui/src/components/ai-elements/tool.tsx",
+      "packages/ui/src/components/ai-elements/toolbar.tsx",
+      "packages/ui/src/components/ai-elements/prompt-input-actions.tsx",
+      "packages/ui/src/components/ai-elements/prompt-input-buttons.tsx",
+      "packages/ui/src/components/ai-elements/prompt-input-primitives.tsx",
+      "packages/ui/src/components/ai-elements/prompt-input-textarea.tsx"
+    ]
+  },
+  {
+    "id": "Fig autocomplete registry",
+    "roots": [
+      "apps/fcode-cli/packages/core/src/tool/handlers/generated/bash-command-registry.ts"
+    ],
+    "license": "MIT",
+    "source": "https://raw.githubusercontent.com/withfig/autocomplete/aef52acff84c45edde61ae610cc2c964802b9a38/LICENSE",
+    "file": "third-party/upstream/5129f8779dca579cfcb235570688a2f15822b270575e04f27ef906aabbcc0355.txt",
+    "sha256": "5129f8779dca579cfcb235570688a2f15822b270575e04f27ef906aabbcc0355",
+    "referenceRevision": "aef52acff84c45edde61ae610cc2c964802b9a38",
+    "importRevision": null
+  },
+  {
+    "id": "Material Icon Theme",
+    "roots": [
+      "packages/desktop/src/renderer/public/material-icons",
+      "packages/web/public/material-icons"
+    ],
+    "license": "MIT",
+    "source": "https://raw.githubusercontent.com/material-extensions/vscode-material-icon-theme/cb1dfb6d9cb73b15681a93939983d75dbba7bf5b/LICENSE",
+    "file": "third-party/upstream/cdab3014d4f69b49dde2b85e81792208c72de613aa6aed7f7a9b5c6609b89670.txt",
+    "sha256": "cdab3014d4f69b49dde2b85e81792208c72de613aa6aed7f7a9b5c6609b89670",
+    "referenceRevision": "cb1dfb6d9cb73b15681a93939983d75dbba7bf5b",
+    "importRevision": null
+  },
+  {
+    "id": "Visual Studio Code IPC and common utilities",
+    "referenceRevision": "44825207bf4389c3bd17c92d3ec28cf784c324cc",
+    "source": "https://raw.githubusercontent.com/microsoft/vscode/44825207bf4389c3bd17c92d3ec28cf784c324cc/LICENSE.txt",
+    "file": "third-party/upstream/9480271317925265e806a9a196aaa33410a962fa9d4d1e248a4a5187bc8c9df9.txt",
+    "sha256": "9480271317925265e806a9a196aaa33410a962fa9d4d1e248a4a5187bc8c9df9",
+    "importRevision": null,
+    "provenance": "Original import revision is not recorded. This pinned upstream license/source reference is not asserted to be the original import version.",
+    "roots": [
+      "packages/rpc/src",
+      "packages/rpc/examples",
+      "packages/shared/src/fcode-protocol-v4/wire-codec.ts"
+    ],
+    "scope": "Upstream-derived IPC, serialization, buffer, lifecycle and event portions only. Local RPC extensions, transports and envelope measurement are ZCode adaptations; inclusion does not attribute all local code to Microsoft.",
+    "license": "MIT"
+  },
+  {
+    "id": "Superpowers skill description adaptations",
+    "referenceRevision": "f2cbfbefebbfef77321e4c9abc9e949826bea9d7",
+    "source": "https://raw.githubusercontent.com/obra/superpowers/f2cbfbefebbfef77321e4c9abc9e949826bea9d7/LICENSE",
+    "file": "third-party/upstream/a37e0e9697144819e1d965176ac4ae5bc3fa02d11e7812036bbcadf6dafe2400.txt",
+    "sha256": "a37e0e9697144819e1d965176ac4ae5bc3fa02d11e7812036bbcadf6dafe2400",
+    "importRevision": null,
+    "provenance": "Original import revision is not recorded. This pinned upstream license/source reference is not asserted to be the original import version.",
+    "roots": [
+      "packages/ui/src/lib/builtinSkillI18n.ts",
+      "apps/fcode-cli/packages/superpowers-plugin/LICENSE"
+    ],
+    "scope": "Superpowers-derived skill descriptions and their translations only; unrelated descriptions from other projects in this file are not covered. The former bundled plugin implementation has been removed; only its retained license remains.",
+    "license": "MIT"
+  },
+  {
+    "id": "CLIProxyAPI native protocol adaptations (modified by FCode)",
+    "roots": [
+      "packages/services/src/provider-oauth/protocol.ts",
+      "packages/services/src/provider-oauth/protocolConfig.ts",
+      "packages/services/src/provider-oauth/importer.ts",
+      "packages/services/src/provider-oauth/modelPresets.json",
+      "apps/fcode-cli/packages/adapters/src/model/codex-native-request.ts",
+      "apps/fcode-cli/packages/adapters/src/model/codex-native-fetch.ts",
+      "apps/fcode-cli/packages/adapters/src/model/codex-native-stream.ts",
+      "apps/fcode-cli/packages/adapters/src/model/codex-native-model.ts",
+      "apps/fcode-cli/packages/adapters/src/model/kimi-native-request.ts",
+      "apps/fcode-cli/packages/adapters/src/model/messages-native-fetch.ts",
+      "apps/fcode-cli/packages/adapters/src/model/messages-native-stream.ts",
+      "packages/services/src/provider-oauth/metaCredentials.ts",
+      "apps/fcode-cli/packages/adapters/src/model/responses-native-fetch.ts",
+      "apps/fcode-cli/packages/adapters/src/model/responses-native-stream.ts",
+      "apps/fcode-cli/packages/adapters/src/model/responses-native-profile.ts",
+      "apps/fcode-cli/packages/adapters/src/model/vendor-responses-request.ts",
+      "apps/fcode-cli/packages/adapters/src/model/xai-native-events.ts",
+      "apps/fcode-cli/packages/adapters/src/model/claude-native-tools.ts",
+      "apps/fcode-cli/packages/adapters/src/model/claude-native-request.ts",
+      "apps/fcode-cli/packages/adapters/src/model/claude-native-events.ts",
+      "apps/fcode-cli/packages/adapters/src/model/devin-native-fetch.ts",
+      "apps/fcode-cli/packages/adapters/src/model/devin-native-frame.ts",
+      "apps/fcode-cli/packages/adapters/src/model/devin-native-history.ts",
+      "apps/fcode-cli/packages/adapters/src/model/devin-native-model-data.ts",
+      "apps/fcode-cli/packages/adapters/src/model/devin-native-model.ts",
+      "apps/fcode-cli/packages/adapters/src/model/devin-native-protobuf.ts",
+      "apps/fcode-cli/packages/adapters/src/model/devin-native-request.ts",
+      "apps/fcode-cli/packages/adapters/src/model/devin-native-stream.ts",
+      "apps/fcode-cli/packages/adapters/src/model/antigravity-native-fetch.ts",
+      "apps/fcode-cli/packages/adapters/src/model/gemini-native-history.ts",
+      "apps/fcode-cli/packages/adapters/src/model/antigravity-native-request.ts",
+      "apps/fcode-cli/packages/adapters/src/model/gemini-native-stream.ts",
+      "apps/fcode-cli/packages/adapters/src/model/gemini-native-tools.ts",
+      "packages/services/src/provider-oauth/antigravityProject.ts",
+      "packages/services/src/provider-oauth/antigravityProfile.ts",
+      "apps/fcode-cli/packages/adapters/src/model/gemini-native-fetch.ts",
+      "apps/fcode-cli/packages/adapters/src/model/vertex-native-request.ts",
+      "apps/fcode-cli/packages/adapters/src/model/vertex-native-fetch.ts",
+      "packages/services/src/provider-oauth/modelCatalog.ts",
+      "packages/services/src/provider-oauth/devinCatalog.ts",
+      "packages/shared/src/node/providerDevinMetadata.ts",
+      "packages/shared/src/node/providerAntigravityProfile.ts",
+      "packages/shared/src/provider-native-auth.ts",
+      "packages/ui/src/assets/provider-icons/model-provider-antigravity.svg"
+    ],
+    "license": "MIT",
+    "file": "third-party/upstream/879792e89cf1bdd6a8d446033ec87e30496f97dcafc4656dc53f641509b346a6.txt",
+    "sha256": "879792e89cf1bdd6a8d446033ec87e30496f97dcafc4656dc53f641509b346a6",
+    "source": "https://github.com/router-for-me/CLIProxyAPI",
+    "importRevision": "v8 (exact commit not present in downloaded snapshot)",
+    "upstreamFiles": [
+      {
+        "path": "internal/registry/models/models.json",
+        "sha256": "518f34fbb85e08ac0e2fbd5b6c5019e4da410482ab413c57ee62fa91e8f17e0f"
+      },
+      {
+        "path": "internal/registry/models/devin_models.json",
+        "sha256": "1aee55bcd7af6be17d18c04046d25aba9c63a635af1088bfa4b7dc04d4be3360"
+      },
+      {
+        "path": "internal/auth/codex/openai_auth.go",
+        "sha256": "ee7ac926d64ee2b8bf03a198123ce3efce683d5ae9efe16136bc10eafb2748eb"
+      },
+      {
+        "path": "internal/auth/claude/anthropic_auth.go",
+        "sha256": "ed8b3de740abdc754f492c64feb3bb38583a0346836b61e7cb0090ff4b8f9357"
+      },
+      {
+        "path": "internal/auth/antigravity/auth.go",
+        "sha256": "3b404e602c991c897fd439a09808f086c803938777219ba139da8f7d715ee922"
+      },
+      {
+        "path": "internal/auth/kimi/kimi.go",
+        "sha256": "94222d452aa1b67d1ef64a8fa10d3dee0fd9327cd8be1519f89edb35780bf932"
+      },
+      {
+        "path": "internal/auth/xai/xai.go",
+        "sha256": "0d1efc7ef5cf4d47cb3cf1d94a19a712021877f83e58a3843898c71641eaef0d"
+      },
+      {
+        "path": "internal/auth/devin/devin_auth.go",
+        "sha256": "447c9a291b946a0c050316343f408ae7856b625a3a369263d44a7f55a9c887e3"
+      },
+      {
+        "path": "internal/auth/meta/meta.go",
+        "sha256": "fb04ced1772ae4dd0e64c5ea77abcaf8a5117022ab539b60e77c29e9c59be64d"
+      },
+      {
+        "path": "internal/auth/vertex/vertex_credentials.go",
+        "sha256": "0624a31a1ad1cccd7e27d3367f7c46d2fec3d06e013a272c11c48c46d4fde4aa"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "879792e89cf1bdd6a8d446033ec87e30496f97dcafc4656dc53f641509b346a6"
+      },
+      {
+        "path": "internal/runtime/executor/codex_executor_request.go",
+        "sha256": "a4d754567c7b4e2d0db1c3e708015b61dc5e9f2f360c03291f110d94874f5fdf"
+      },
+      {
+        "path": "internal/runtime/executor/codex_executor_execute.go",
+        "sha256": "ce41d2f8489912f7cf3b0290068f598e4faf15d577d7b9fe86d9b679c5857061"
+      },
+      {
+        "path": "internal/runtime/executor/codex_executor_terminal.go",
+        "sha256": "64d281c45fc9ebd76786a59add08500a0abce64050e0d710e0046c93ced770bc"
+      },
+      {
+        "path": "internal/runtime/executor/codex_executor_stream.go",
+        "sha256": "a68a5eddfb58ee81d9ca96a7b77af63fd15bd0e36f4ef29386e5193a01e2eb2c"
+      },
+      {
+        "path": "internal/translator/codex/openai/responses/codex_openai-responses_request.go",
+        "sha256": "6d7e71ce60108efc2d0897ce2451f0b3f25efd62427ce093061d7767b92c5647"
+      },
+      {
+        "path": "internal/runtime/executor/kimi_executor.go",
+        "sha256": "73286d375d8341b273d17de45aaa2e20e0790f9f30353b1d1e8eeb955d0e068b"
+      },
+      {
+        "path": "internal/runtime/executor/helps/kimi_responses.go",
+        "sha256": "ff61bd530ad229b3ef03a300a47994e2ec89f4a404d656d27d0c485150e3c52c"
+      },
+      {
+        "path": "internal/runtime/executor/kimi_thinking_replay.go",
+        "sha256": "f67bbd24f97d57bf3cc8882aa66204c48dfa246f763304287aa8afb5c1567452"
+      },
+      {
+        "path": "internal/runtime/executor/xai_executor.go",
+        "sha256": "5cf90aa5ee94980dcb73bafb851ee87385beb3b4ad8132145e93a64ef6687c0c"
+      },
+      {
+        "path": "internal/runtime/executor/xai_executor_request.go",
+        "sha256": "d8a3af4d9a9997bbdb67fe0c5f4dfba746fa4a36ad08103e06b77093704fb245"
+      },
+      {
+        "path": "internal/runtime/executor/xai_executor_response.go",
+        "sha256": "78d6f5a854a20b66884a4c9f09f94eb92eafde01eea28529a3a3c25b806ab65a"
+      },
+      {
+        "path": "internal/runtime/executor/meta_executor.go",
+        "sha256": "022f31d542691f38147f49b56c27371a82f872d40c52c9dce1bdaa1d2b3014b9"
+      },
+      {
+        "path": "internal/runtime/executor/meta_executor_execute.go",
+        "sha256": "c8487c26aa378d48cb13c3721a673562417b3fd1cb3a7f7283dabab16e4d4396"
+      },
+      {
+        "path": "internal/runtime/executor/helps/meta_tools.go",
+        "sha256": "38ce5b40de1a84ef19ffe047a65a05becf902564609d3bdb8e7b40a5d30428ed"
+      },
+      {
+        "path": "internal/runtime/executor/claude_executor_request.go",
+        "sha256": "0d33486349ae9eb8edf8bac877ab5f2e62c6d1db686cc6dec53465b1ed1ab837"
+      },
+      {
+        "path": "internal/runtime/executor/claude_executor_execute.go",
+        "sha256": "9ee74f7a0cd1b0f74c117ff58b4d8e495f4800637ce24a63a7f0b2e6a542fc14"
+      },
+      {
+        "path": "internal/runtime/executor/claude_executor_stream.go",
+        "sha256": "039dd4bcf541ff64184fbb9248d13d637b4ca3ec0dcc116a281525bfccfa4e68"
+      },
+      {
+        "path": "internal/runtime/executor/claude_executor.go",
+        "sha256": "073f3aff49aaed90fad354364adc182fd33211eb35a30e1419c64f2dde9d3a4b"
+      },
+      {
+        "path": "internal/runtime/executor/helps/claude_builtin_tools.go",
+        "sha256": "a580163e211291cc98ad3eb9150c842890617c1914d844d8d2dfef0e98d91c7a"
+      },
+      {
+        "path": "internal/runtime/executor/helps/claude_mcp_alias.go",
+        "sha256": "ace88ffeb4666922ac1a3364d406228838f87aa68f2a0d3ee8cc624761fdaa51"
+      },
+      {
+        "path": "internal/runtime/executor/devin_executor.go",
+        "sha256": "ad17e0346d667d062adc53120a85ec5f77fb1cc1f32c925b4b2e4b9b513801c6"
+      },
+      {
+        "path": "internal/runtime/executor/helps/devin_wire.go",
+        "sha256": "55175c4462d0892dfe6d486034f84fbd3bd6b9e23f33a5d85e9bf05999caa463"
+      },
+      {
+        "path": "internal/runtime/executor/helps/devin_models.go",
+        "sha256": "9601c21c9f60a5ff78a97008f0aed64e34e1568eac23e94c44eb595871905a9d"
+      },
+      {
+        "path": "internal/auth/antigravity/constants.go",
+        "sha256": "f99ba3bafd7ba273600582d171a79a701c593cf391039d3495634c30601fff11"
+      },
+      {
+        "path": "internal/misc/antigravity_version.go",
+        "sha256": "a393b67962923ef53630845f78b5303124a6a5730330979d4222b892def2b014"
+      },
+      {
+        "path": "internal/runtime/executor/antigravity_executor.go",
+        "sha256": "9f0bdb2fb2fc10ede9f616493fe7ba7ecc24164bd1c45912e37da5795a2fea4d"
+      },
+      {
+        "path": "internal/runtime/executor/antigravity_executor_request.go",
+        "sha256": "9eb0769a6ea6ff23a1081a9126a16914388f14f7a895832950af369ddd8cd52d"
+      },
+      {
+        "path": "internal/runtime/executor/antigravity_executor_stream.go",
+        "sha256": "e2d768d1e8e2932328fafceb02f0628f32b0de036792303589fdf854660493a4"
+      },
+      {
+        "path": "internal/runtime/executor/antigravity_executor_auth.go",
+        "sha256": "d72071c0583191fba8bbd1c42647bc1e0c2a3783659b7ba130963bff4d16120c"
+      },
+      {
+        "path": "internal/translator/antigravity/claude/antigravity_claude_request.go",
+        "sha256": "25905f367a740f1c02f30569a8dd21d50cd471ed66e2dcac7fd4dd330f556af8"
+      },
+      {
+        "path": "internal/translator/antigravity/claude/antigravity_claude_response.go",
+        "sha256": "ed3ba058ba59d1fbff1ff31794f41b1c487bd80b5695d814a6284a481d2bf8e9"
+      },
+      {
+        "path": "internal/util/gemini_schema.go",
+        "sha256": "67b06ec76652ab71e372488b2d5d38963d0d61ad14ea76c887c5d1468a715253"
+      },
+      {
+        "path": "internal/runtime/executor/gemini_vertex_executor.go",
+        "sha256": "7712059a28eca6572cb1159caa29e604ee6d573724ff71e5dc0e2f61a8913bf9"
+      },
+      {
+        "path": "internal/runtime/executor/helps/vertex_payload_helpers.go",
+        "sha256": "ed5d05449659449c88088f8614ac6d37d81b290c288ccdffa37aa4747a1d7410"
+      },
+      {
+        "path": "cmd/fetch_codex_models/main.go",
+        "sha256": "330300de7b4d25f1ec71e432adb509c3b111ace8c3c1b0f42ef4f816a10cb966"
+      },
+      {
+        "path": "cmd/fetch_antigravity_models/main.go",
+        "sha256": "eb69c3940d194f7f3035df5239a7ee5cbe645377eface679a62cd9a83da683f6"
+      },
+      {
+        "path": "cmd/fetch_devin_models/main.go",
+        "sha256": "f421e72b1bb3dd23fb9c38a4a86c712dc3e95ad9959c8fc13ddece04fe8d00f9"
+      },
+      {
+        "path": "assets/logo/antigravity.svg",
+        "sha256": "43f551fd125c17fb54c8c74eb461924fb97f32bb64ac89f73bb73852753a6461"
+      }
+    ]
+  }
+]
