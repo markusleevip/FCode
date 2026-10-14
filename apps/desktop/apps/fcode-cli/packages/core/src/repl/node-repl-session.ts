@@ -10,114 +10,28 @@ import {
   stringifyReplResult,
 } from "./node-repl-runtime-helpers.js";
 
-/** REPL 收集的图片（nodeRepl.emitImage）。 */
-export interface NodeReplImage {
-  base64: string;
-  mimeType: string;
-}
+import {
+  browserScreenshotIndexResult,
+  latestCuaAppResult,
+  type NodeReplCuaAppIdentity,
+  type NodeReplImage,
+  type NodeReplRequestMeta,
+  type NodeReplRunResult,
+  type NodeReplSessionOptions,
+  type NodeReplStructuredResult,
+  type NodeReplWriteSink,
+} from "./node-repl-output.js";
+export type {
+  NodeReplCuaAppIdentity,
+  NodeReplImage,
+  NodeReplRequestMeta,
+  NodeReplRunResult,
+  NodeReplSessionOptions,
+  NodeReplStructuredResult,
+  NodeReplWriteSink,
+} from "./node-repl-output.js";
 
-/** SDK/bridge 结果块；保持 MCP 的结构化字段，但不让 core 依赖 MCP SDK 类型。 */
-export interface NodeReplStructuredResult {
-  content: Array<{ type: string; [key: string]: unknown }>;
-  isError?: boolean;
-  structuredContent?: Record<string, unknown>;
-  _meta?: Record<string, unknown>;
-}
-
-/**
- * 本次 cell 操作的目标应用身份（Computer Use）。
- *
- * 只由宿主的 CUA bridge 在收到 broker 响应时记录 —— 它不在 sandbox globals 上，模型改不到。
- * `nodeRepl.setResponseMeta` / `nodeRepl.emitStructuredResult` 都是模型可写通道，经它们到达的
- * producer 应用元数据不可信，必须在 toMcpRunResult 里丢弃。
- */
-export interface NodeReplCuaAppIdentity {
-  appKey: string;
-  displayName?: string;
-}
-
-/** 输出 sink：REPL 内 nodeRepl.write / console 汇聚到这里；emitImage 收集图片。 */
-export interface NodeReplWriteSink {
-  write(text: string): void;
-  images: NodeReplImage[];
-  browserScreenshots: NodeReplImage[];
-  structuredResults: NodeReplStructuredResult[];
-  responseMeta: Record<string, unknown>;
-  cuaApps: NodeReplCuaAppIdentity[];
-}
-
-export interface NodeReplRunResult {
-  /** 最后值/返回值的字符串化（可能为 undefined）。 */
-  result?: string;
-  /** 本次 run 期间 nodeRepl.write + console 收集的输出。 */
-  logs: string;
-  /** 抛错时的结构化错误（不崩进程）。 */
-  error?: { name: string; message: string; stack?: string };
-  /** 本次 run 期间 nodeRepl.emitImage 收集的图片（如截图）。 */
-  images?: NodeReplImage[];
-  /** images 中确认来自本次显式 tab.screenshot() 的索引。 */
-  browserScreenshotImageIndices?: number[];
-  /** SDK 通过专用通道写入的结构化结果；优先级高于 console/REPL 回显。 */
-  structuredResults?: NodeReplStructuredResult[];
-  /** 本次 run 期间 nodeRepl.setResponseMeta 设置的元数据。 */
-  responseMeta?: Record<string, unknown>;
-  /** 本次 cell 最后一个确立身份的 CUA 调用所操作的应用；由宿主 bridge 记录，模型不可写。 */
-  cuaApp?: NodeReplCuaAppIdentity;
-}
-
-export type NodeReplRequestMeta = Record<string, unknown>;
-
-export interface NodeReplSessionOptions {
-  /** 注入到 sandbox 的额外全局（如 browser execute 桥、agent 对象）。 */
-  injectedGlobals?: Record<PropertyKey, unknown> | (() => Record<PropertyKey, unknown>);
-  /** MCP stdio runtime 使用受限 process facade，防止 cell 关闭进程或写坏协议 stdout。 */
-  restrictProcess?: boolean;
-}
-
-function browserScreenshotIndexResult(
-  images: readonly NodeReplImage[],
-  browserScreenshots: readonly NodeReplImage[],
-): Pick<NodeReplRunResult, "browserScreenshotImageIndices"> {
-  if (images.length === 0 || browserScreenshots.length === 0) return {};
-
-  const remainingByPayload = new Map<string, number>();
-  for (const screenshot of browserScreenshots) {
-    const key = `${screenshot.mimeType}\u0000${screenshot.base64}`;
-    remainingByPayload.set(key, (remainingByPayload.get(key) ?? 0) + 1);
-  }
-
-  const browserScreenshotImageIndices: number[] = [];
-  images.forEach((image, index) => {
-    const key = `${image.mimeType}\u0000${image.base64}`;
-    const remaining = remainingByPayload.get(key) ?? 0;
-    if (remaining <= 0) return;
-    browserScreenshotImageIndices.push(index);
-    remainingByPayload.set(key, remaining - 1);
-  });
-  return browserScreenshotImageIndices.length > 0 ? { browserScreenshotImageIndices } : {};
-}
-
-/**
- * 一个 cell 里多次 CUA 调用时取最后一个确立身份的那个，与 `_meta` 既有的 last-write-wins 一致。
- * 不产生 primary 的调用（list_apps 的 items 模式、request_access / stop 的 none）根本不会
- * 进入这个数组，所以不会把前面动作的身份覆盖掉。
- */
-function latestCuaAppResult(
-  cuaApps: readonly NodeReplCuaAppIdentity[],
-): Pick<NodeReplRunResult, "cuaApp"> {
-  const cuaApp = cuaApps.at(-1);
-  return cuaApp ? { cuaApp } : {};
-}
-
-/**
- * NodeReplSession：调用方进程内的持久 JavaScript 执行引擎。
- *
- * 每个 session 一个实例；sandbox 即模型看到的 globalThis，并在多次 run() 之间保持状态。
- * 顶层 await 由 async IIFE 执行，动态加载通过注入的 importModule() 完成，结果统一结构化返回。
- *
- * 安全说明：vm 不是安全沙箱，隔离仍由上层权限与审批 gate 承担。受限 process facade 只负责
- * 限制 cell 对进程控制和 MCP stdio 的直接影响；第三方模块仍在宿主 Node realm 执行。
- */
+/** Persistent per-session JavaScript engine. VM isolation does not replace permission gates. */
 export class NodeReplSession {
   private context: Context;
   private readonly createInjectedGlobals: () => Record<PropertyKey, unknown>;
@@ -368,7 +282,12 @@ export class NodeReplSession {
     this.currentSink.cuaApps.push(app);
   }
 
-  /** 执行一段代码；signal 支持取消（超时/停止）。 */
+  /** Only the authenticated host bridge records capture provenance, never sandbox globals. */
+  recordCuaCapture(image: NodeReplImage): void {
+    this.currentSink?.cuaCaptures.push(image);
+  }
+
+  /** Execute a cell with cancellation support. */
   async run(
     code: string,
     options: {
@@ -389,6 +308,7 @@ export class NodeReplSession {
     const structuredResults: NodeReplStructuredResult[] = [];
     const responseMeta: Record<string, unknown> = {};
     const cuaApps: NodeReplCuaAppIdentity[] = [];
+    const cuaCaptures: NodeReplImage[] = [];
     if (this.nodeReplApi) {
       this.nodeReplApi.requestMeta = { ...options.requestMeta };
     }
@@ -401,6 +321,7 @@ export class NodeReplSession {
       structuredResults,
       responseMeta,
       cuaApps,
+      cuaCaptures,
     };
     try {
       // 执行委托给 executor（默认路线 B：instrument 顶层声明 → async-IIFE → runInContext），
@@ -419,6 +340,7 @@ export class NodeReplSession {
         ...(structuredResults.length > 0 ? { structuredResults } : {}),
         ...(Object.keys(responseMeta).length > 0 ? { responseMeta } : {}),
         ...latestCuaAppResult(cuaApps),
+        ...(cuaCaptures.length ? { transientMedia: true as const, cuaCaptures } : {}),
       };
     } catch (error) {
       // 注意：vm context 内抛出的 Error 属于不同 realm，host 侧 `instanceof Error` 为 false。
@@ -447,6 +369,7 @@ export class NodeReplSession {
         ...(structuredResults.length > 0 ? { structuredResults } : {}),
         ...(Object.keys(responseMeta).length > 0 ? { responseMeta } : {}),
         ...latestCuaAppResult(cuaApps),
+        ...(cuaCaptures.length ? { transientMedia: true as const, cuaCaptures } : {}),
       };
     } finally {
       this.currentSink = null;

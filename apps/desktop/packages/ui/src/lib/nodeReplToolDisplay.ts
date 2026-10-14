@@ -282,21 +282,25 @@ function extractError(value: unknown, depth = 0): NodeReplDisplayError | undefin
 
 function extractImages(values: unknown[]): NodeReplDisplayImage[] {
   const images: NodeReplDisplayImage[] = [];
-  const seen = new Set<string>();
+  const seen = new Map<string, Set<string>>();
   const visited = new Set<object>();
   const addImage = (value: Record<string, unknown>) => {
-    // 旧 built-in result 使用 {images:[{base64,mimeType}]}，真实 MCP
-    // 使用 content 里的 {type:"image",data,mimeType}。专用 renderer 必须兼容两种历史形态。
+    // Support both legacy {images:[{base64,mimeType}]} and MCP image content blocks.
     const base64 = readNonEmptyString(value.base64) ?? readNonEmptyString(value.data);
     const mimeType = readNonEmptyString(value.mimeType)?.trim();
     if (!base64 || !mimeType || !IMAGE_MIME_TYPE_PATTERN.test(mimeType)) {
       return;
     }
-    const key = `${mimeType}:${base64.length}:${base64.slice(0, 24)}`;
-    if (seen.has(key)) {
+    let matchingMime = seen.get(mimeType);
+    if (matchingMime?.has(base64)) {
       return;
     }
-    seen.add(key);
+    if (!matchingMime) {
+      matchingMime = new Set<string>();
+      seen.set(mimeType, matchingMime);
+    }
+    // Equal PNG lengths and headers do not establish identical screenshot content.
+    matchingMime.add(base64);
     images.push({ base64, mimeType });
   };
   const visit = (value: unknown): void => {

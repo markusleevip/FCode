@@ -47,7 +47,7 @@
     "apps/fcode-cli/packages/dynamic-workflow-runtime/package.json": "497e580b7a742865af7109b6b6fc8430ef49b27856d6d0032cddecaccb753e05",
     "apps/fcode-cli/packages/dynamic-workflow/package.json": "974d563b5bba94496c9ddaf895cdedc92d252d567664d48b490d21160c86b9bc",
     "apps/fcode-cli/packages/i18n/package.json": "f838d8dc4550489e0c89e8e7b31173632b304ebfbcf5ddcc5d79018a29591bc7",
-    "apps/fcode-cli/packages/node-repl-host/package.json": "402b23ccc4b7b08097c0d2a426e6d4353cbd62cd515bf0cd22f447b3eebe1701",
+    "apps/fcode-cli/packages/node-repl-host/package.json": "a07190f71e320583858fd386e2cd7d1d548753380424b3db5a6284a3d19af104",
     "apps/fcode-cli/packages/shared-types/package.json": "1d72e40445b2eca4e12cd1b20080b10e6d20cc983a82963612074d49bd080d74",
     "apps/fcode-cli/packages/superpowers-plugin/LICENSE": "a37e0e9697144819e1d965176ac4ae5bc3fa02d11e7812036bbcadf6dafe2400",
     "apps/fcode-cli/packages/swift-bridge/package.json": "8850dc69d5b78fcffcbbf9ed2a942b2a5ab4a7cfbe9a453154abe69d573ada33",
@@ -55,10 +55,10 @@
     "apps/fcode-cli/packages/tui/package.json": "4b8eb1a5c3f2477de54a0ac7e075d041813c7a8baa6ed12ec0f16c06c2675f19",
     "apps/fcode-cli/tools/prompt-trajectory/package.json": "0c9653efa6382a5fbd6b9dcb7d1a4f19c4e9c67b375b554a32e96e406ac6d7e1",
     "apps/fcode-cli/tools/typescript/package.json": "a6a97cf8264fb4027af9d9c87bfada249419d3ae862719707926dae189a32825",
-    "package.json": "68573e6e8ee8cb10c851ab201eea654d12b4179bd043f3ea9e537c5eb5e38526",
+    "package.json": "6c2049fe8598f38a9711079749b3f9646e0a358810865377282e0e8e34bcb81d",
     "packages/client/package.json": "1f93f6d158a9cfc3df00cddd8da1978b5f6cf299f89d2a36aeac57e1cdb198b9",
-    "packages/cua/package.json": "116b63af9478c0fd9f699e3f11be064a7f7b4e65b9e4bad517a25817a2cf2fb1",
-    "packages/desktop/package.json": "46d7f9bde28872ff09a1776cca13853b302f6709364396209c1df833668b9134",
+    "packages/cua/package.json": "918852fc5b6d4e3db7a9f2e14304d26fffbc07d4daaa39f7a33df97c87cae208",
+    "packages/desktop/package.json": "a36f1bd7c8541c0da7227c9c0ec391a560b568637e9ce4fb90ec778b0d0df640",
     "packages/desktop/src/renderer/public/material-icons/3d.svg": "9527b849f0fba57ca7640e2717b3a19cb5f5e046712cbbd8b75d73af338c68fb",
     "packages/desktop/src/renderer/public/material-icons/abap.svg": "1335bd7eb9a0ed49deb622330d680c2e97731726a7a5eee8e4f46dc1e5db4de4",
     "packages/desktop/src/renderer/public/material-icons/abc.svg": "d1a68020e8f020ef29dca5f94dc8613b7ae8fb5b212d8b1cc23b0f975ac7acda",
@@ -29237,11 +29237,11 @@
       "files": [
         {
           "file": "packages/services/src/provider-oauth/protocol.ts",
-          "sha256": "e3d3af7cbe7c8786936e885b25ee3ab4d1301f937e272d4535ed621f4c0cc2d5"
+          "sha256": "1bed297b015899d287256ccd7b82535efd1cf7a1d437e9caccad156ca37c0ce1"
         },
         {
           "file": "packages/services/src/provider-oauth/protocolConfig.ts",
-          "sha256": "d5f2462ab739b2e5cc77fff265c6c8622d9c70648a0d97f83dcb1222e07729f8"
+          "sha256": "191ae796fa229d3b8cad952fc9e956da89b1b88e7c4127e943c8b1fc7c7ff814"
         },
         {
           "file": "packages/services/src/provider-oauth/importer.ts",
@@ -29249,7 +29249,7 @@
         },
         {
           "file": "packages/services/src/provider-oauth/modelPresets.json",
-          "sha256": "fd46ce988cab805652b8e5001bbc59e7fd6807b28977d7ddaf6782a9517e7eb8"
+          "sha256": "90b37f1a435f2ae155f316f8e1ab7147c4271830cf89e24b46cb58155aa46366"
         },
         {
           "file": "apps/fcode-cli/packages/adapters/src/model/codex-native-request.ts",
@@ -29389,7 +29389,7 @@
         },
         {
           "file": "packages/services/src/provider-oauth/modelCatalog.ts",
-          "sha256": "ef9df156d93c85e95ef2bfd6f28ed15e7437a24d40f973b97305fda34babb7e8"
+          "sha256": "85def196b85e8a026f4537548264bcd6fc9e349d5782aaa0a19487aaf9e7a1e0"
         },
         {
           "file": "packages/services/src/provider-oauth/devinCatalog.ts",

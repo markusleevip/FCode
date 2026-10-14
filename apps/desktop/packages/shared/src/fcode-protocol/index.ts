@@ -1058,6 +1058,10 @@ const fcodeComputerUseOperationEventBaseSchema = z
 const fcodeComputerUseTurnStartedEventSchema = fcodeComputerUseOperationEventBaseSchema.extend({
   kind: z.literal("turn-started"),
   turnId: nonEmptyString,
+  inputId: nonEmptyString.optional(),
+  messageId: nonEmptyString.optional(),
+  traceId: nonEmptyString.optional(),
+  humanUser: z.boolean().optional(),
 });
 const fcodeComputerUseTurnCompletedEventSchema = fcodeComputerUseOperationEventBaseSchema.extend({
   kind: z.literal("turn-completed"),
@@ -1084,6 +1088,11 @@ const fcodeComputerUseToolStartedEventSchema = fcodeComputerUseOperationEventBas
   toolCallId: nonEmptyString,
   toolName: nonEmptyString.optional(),
 });
+const fcodeComputerUseToolCompletedEventSchema = fcodeComputerUseOperationEventBaseSchema.extend({
+  kind: z.literal("tool-completed"),
+  turnId: nonEmptyString.optional(),
+  toolCallId: nonEmptyString,
+});
 const fcodeComputerUseSessionClosedEventSchema = fcodeComputerUseOperationEventBaseSchema.extend({
   kind: z.literal("session-closed"),
 });
@@ -1094,6 +1103,7 @@ export const fcodeComputerUseOperationEventSchema = z.discriminatedUnion("kind",
   fcodeComputerUseTurnFailedEventSchema,
   fcodeComputerUseToolScheduledEventSchema,
   fcodeComputerUseToolStartedEventSchema,
+  fcodeComputerUseToolCompletedEventSchema,
   fcodeComputerUseSessionClosedEventSchema,
 ]);
 export type FCodeComputerUseOperationEvent = z.infer<typeof fcodeComputerUseOperationEventSchema>;
@@ -2659,6 +2669,7 @@ export const fcodeSkillReferenceCatalogEntrySchema = z
     scope: z.enum(["workspace", "user", "plugin"]),
     enabled: z.literal(true),
     pluginName: nonEmptyString.optional(),
+    pluginId: nonEmptyString.optional(),
   })
   .strict();
 export type FCodeSkillReferenceCatalogEntry = z.infer<typeof fcodeSkillReferenceCatalogEntrySchema>;

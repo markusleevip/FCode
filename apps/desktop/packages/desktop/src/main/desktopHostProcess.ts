@@ -21,6 +21,8 @@ import {
   type HostMcpTelemetryResponse,
   type HostSessionCreateTelemetryResponse,
   type TaskRealtimeHostDeliveryKind,
+  type ComputerUseHostCommand,
+  type ComputerUseHostResult,
   formatFCodeHostProcessName,
   HostMessageTypes,
   HostResponseTypes,
@@ -241,6 +243,8 @@ export function spawnHostProcess(
       sessionContext?: "live" | "cached";
       command: unknown;
     }) => Promise<{ ok: boolean; [k: string]: unknown }>;
+    handleComputerUseControlRequest?: (scope: { ownerId: string; hostId: string }, command: ComputerUseHostCommand) => Promise<ComputerUseHostResult>;
+    onComputerUseHostExited?: (hostId: string) => void;
     /** Host 已完成附件授权后，由 Main 将本地视频 realpath 加入精确协议授权集合。 */
     authorizeLocalMediaPreviewPath?: (path: string) => Promise<string>;
   },
@@ -401,6 +405,17 @@ export function spawnHostProcess(
     if (result.data.type === HostResponseTypes.CuaOperationState) {
       // Main 只投影 Host 已经判定的 turn 状态，不在这里重复解析 session/tool 业务事件。
       dependencies.onCuaOperationStateChanged?.(child, result.data);
+      return;
+    }
+
+    if (result.data.type === HostResponseTypes.ComputerUseControlRequest) {
+      const request = result.data;
+      const handler = dependencies.handleComputerUseControlRequest;
+      void (handler ? handler({ ownerId: String(win.id), hostId }, request.command) :
+        Promise.resolve({ ok: false as const, error: { code: "backend_unavailable", message: "Computer Use is unavailable." } }))
+        .catch(() => ({ ok: false as const, error: { code: "backend_unavailable", message: "Computer Use Host bridge failed." } }))
+        .then((response) => child.postMessage({ type: HostMessageTypes.ComputerUseControlResult,
+          requestId: request.requestId, result: response }));
       return;
     }
 
@@ -724,6 +739,7 @@ export function spawnHostProcess(
   registerHostProcess(label, child);
 
   child.on("exit", (code) => {
+    dependencies.onComputerUseHostExited?.(hostId);
     exitedHostProcesses.add(child);
     // Host exit 是 fail-hidden 权威边界；不能依赖即将退出的 Host 再补发 inactive。
     dependencies.onCuaOperationStateSourceExited?.(child);

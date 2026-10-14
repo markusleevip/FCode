@@ -40,7 +40,7 @@ export async function persistToolResultMediaAttachments(input: {
   if (!input.sessionStore) return undefined;
   const projection = persistedToolMediaProjection(input.content);
   if (!projection) return undefined;
-  if (!input.artifactStore) {
+  if (!input.artifactStore && projection.mediaBlocks.length > 0) {
     throw new Error("Cannot persist tool result media without an artifact store");
   }
 
@@ -52,7 +52,7 @@ export async function persistToolResultMediaAttachments(input: {
     const artifactUri =
       existingArtifactUri ??
       (
-        await input.artifactStore.writeToolResultArtifact(
+        await input.artifactStore!.writeToolResultArtifact(
           {
             content: block.dataUrl,
             contentType: "text/plain",
@@ -106,16 +106,32 @@ function persistedToolMediaProjection(content: ModelMessageContent):
       continue;
     }
     if ((block.type === "image" || block.type === "video") && block.dataUrl.startsWith("data:")) {
+      if (block.source?.retention === "transient") {
+        modelContentLayout.push({ type: "text", text: TRANSIENT_MEDIA_HISTORY_TEXT });
+        continue;
+      }
       modelContentLayout.push({ type: "attachment", attachmentIndex: mediaBlocks.length });
       mediaBlocks.push(block);
       continue;
     }
     if (block.type === "file" && block.dataUrl?.startsWith("data:")) {
+      if (block.source?.retention === "transient") {
+        modelContentLayout.push({ type: "text", text: TRANSIENT_MEDIA_HISTORY_TEXT });
+        continue;
+      }
       modelContentLayout.push({ type: "attachment", attachmentIndex: mediaBlocks.length });
       mediaBlocks.push(block as DataBackedToolMediaBlock);
       continue;
     }
     return undefined;
   }
-  return mediaBlocks.length > 0 ? { mediaBlocks, modelContentLayout } : undefined;
+  return mediaBlocks.length > 0 ||
+    modelContentLayout.some(
+      (entry) => entry.type === "text" && entry.text === TRANSIENT_MEDIA_HISTORY_TEXT,
+    )
+    ? { mediaBlocks, modelContentLayout }
+    : undefined;
 }
+
+export const TRANSIENT_MEDIA_HISTORY_TEXT =
+  "[Computer Use image was not retained. Capture a fresh observation before continuing; historical image references are expired.]";

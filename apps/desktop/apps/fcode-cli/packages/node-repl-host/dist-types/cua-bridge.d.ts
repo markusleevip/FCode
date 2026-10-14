@@ -1,4 +1,5 @@
 import type { NodeReplRequestMeta, NodeReplSession } from "@fcode/core";
+import type { ComputerUseRuntimeContext } from "@fcode/cua";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 export declare const NODE_REPL_CUA_BRIDGE_SYMBOL: unique symbol;
 export declare const CUA_UNAVAILABLE_IN_SUBAGENT_MESSAGE = "Computer Use is not available in subagent";
@@ -24,4 +25,5 @@ export declare function createComputerUseBridgeGlobals(input: {
     session: () => NodeReplSession;
     documentationRoot: string;
 }): Record<PropertyKey, unknown>;
+export declare function buildComputerUseRequestContext(meta: NodeReplRequestMeta): ComputerUseRuntimeContext;
 //# sourceMappingURL=cua-bridge.d.ts.map

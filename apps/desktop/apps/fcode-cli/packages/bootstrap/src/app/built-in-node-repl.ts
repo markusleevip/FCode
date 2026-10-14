@@ -45,6 +45,7 @@ export function resolveBuiltInNodeReplMcpServers(input: {
   return {
     [BUILT_IN_NODE_REPL_SERVER_NAME]: {
       ...nodeRepl,
+      source: { kind: "builtin" },
       isolation: "workspace",
       protocolVersion: "2026-07-28",
     },

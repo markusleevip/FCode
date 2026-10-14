@@ -37,6 +37,15 @@ export function createDesktopPlatform(options: {
     openExternal: (url) => window.fcode.openExternal(url),
     openInFileManager: (path) => window.fcode.openInFileManager(path),
     openExternalFile: (path) => window.fcode.openExternalFile(path),
+    prepareComputerUseIntent: window.fcode.prepareComputerUseIntent
+      ? (input) => window.fcode.prepareComputerUseIntent!(input)
+      : undefined,
+    getComputerUsePanel: () => window.fcode.getComputerUsePanel(),
+    computerUsePanelAction: (request) => window.fcode.computerUsePanelAction(request),
+    onComputerUsePanelChanged: (callback) => window.fcode.onComputerUsePanelChanged(callback),
+    getComputerUseCredentialUi: () => window.fcode.getComputerUseCredentialUi(),
+    focusComputerUseCredentialUi: (sessionId) => window.fcode.focusComputerUseCredentialUi(sessionId),
+    onComputerUseCredentialUiChanged: (callback) => window.fcode.onComputerUseCredentialUiChanged(callback),
     openCuaPermissionOnboarding: window.fcode.openCuaPermissionOnboarding
       ? (permissionOptions) =>
           window.fcode.openCuaPermissionOnboarding?.(permissionOptions) ??

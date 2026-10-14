@@ -15,12 +15,14 @@ import {
   type NodeReplRunResult,
 } from "@fcode/core/repl";
 import { createComputerUseRuntime, type ComputerUseRuntime } from "@fcode/cua";
+import { sanitizeFCodeRuntimeEnv } from "@fcode/shared/runtime-env";
 import { z } from "zod";
 import { createBrowserBridgeGlobals, type ActiveNodeReplCall } from "./browser-bridge.js";
 import {
   createComputerUseBridgeGlobals,
   type ActiveCuaNodeReplCall,
   type NodeReplCuaBrokerConnection,
+  buildComputerUseRequestContext,
 } from "./cua-bridge.js";
 import { createNodeReplCuaBroker, type NodeReplCuaBroker } from "./cua-broker.js";
 import {
@@ -56,7 +58,8 @@ const jsInputSchema = z
 const requestContextSchema = z
   .object({
     parent_span_id: z.string().optional(),
-    runtime_scope: z.enum(["main", "subagent"]).default("main"),
+    runtime_scope: z.enum(["main", "subagent"]).optional(),
+    tool_call_id: z.string().optional(),
     session_id: z.string().trim().min(1).optional(),
     span_id: z.string().optional(),
     trace_id: z.string().optional(),
@@ -163,9 +166,7 @@ export function createNodeReplMcpRuntime(
 ): NodeReplMcpRuntime {
   const executeJs = input.executeJs ?? executeJsInWorker;
   const cuaRuntime = input.cuaRuntime ?? captureComputerUseRuntimeFromEnvironment();
-  const cuaBroker = cuaRuntime
-    ? createNodeReplCuaBroker({ runtime: cuaRuntime, platform: process.platform })
-    : undefined;
+  const cuaBrokers = new Set<ReturnType<typeof createNodeReplCuaBroker>>();
   const queues = new Map<string, Promise<void>>();
   const activeCalls = new Set<AbortController>();
   let disposed = false;
@@ -210,7 +211,14 @@ export function createNodeReplMcpRuntime(
         activeCalls.add(callController);
         const timeoutMs = args.timeout_ms ?? NODE_REPL_DEFAULT_TIMEOUT_MS;
         const callMeta = { ...requestMeta, ...(args.title ? { title: args.title } : {}) };
+        // This source hint allocates resources only. Main independently requires the actual selected live turn/call.
+        let cuaBroker: ReturnType<typeof createNodeReplCuaBroker> | undefined;
         try {
+          if (cuaRuntime && args.code.includes("setupComputerUseRuntime")) {
+            cuaBroker = createNodeReplCuaBroker({ runtime: cuaRuntime, platform: process.platform,
+              context: buildComputerUseRequestContext(callMeta) });
+            cuaBrokers.add(cuaBroker); await cuaBroker.ready;
+          }
           const signal = AbortSignal.any([
             extra.mcpReq.signal,
             callController.signal,
@@ -225,6 +233,7 @@ export function createNodeReplMcpRuntime(
           });
           return toMcpRunResult(run);
         } finally {
+          if (cuaBroker) { cuaBrokers.delete(cuaBroker); await cuaBroker.close(); }
           activeCalls.delete(callController);
         }
       });
@@ -239,7 +248,7 @@ export function createNodeReplMcpRuntime(
       for (const controller of activeCalls) controller.abort();
       activeCalls.clear();
       queues.clear();
-      void cuaBroker?.close();
+      for (const broker of cuaBrokers) void broker.close(); cuaBrokers.clear();
       void cuaRuntime?.dispose();
     },
   };
@@ -254,7 +263,9 @@ async function executeJsInWorker(input: NodeReplExecuteInput): Promise<NodeReplR
     syncTimeoutMs: input.syncTimeoutMs,
     cuaBroker: input.cuaBroker,
   };
-  const worker = new Worker(new URL(import.meta.url), { workerData: data });
+  const worker = new Worker(new URL(import.meta.url), {
+    workerData: data, env: sanitizeFCodeRuntimeEnv(process.env),
+  });
   return await new Promise<NodeReplRunResult>((resolveRun, rejectRun) => {
     let settled = false;
     const cleanup = () => {
@@ -368,9 +379,11 @@ export function captureComputerUseRuntimeFromEnvironment(
   env: NodeJS.ProcessEnv = process.env,
 ): ComputerUseRuntime | undefined {
   const socketPath = env.FCODE_CUA_PERMISSION_BROKER_SOCKET?.trim();
-  if (!socketPath) return undefined;
+  const brokerToken = env.FCODE_CUA_PLUGIN_AUTHORITY?.trim();
+  if (!socketPath || !brokerToken) return undefined;
   return createComputerUseRuntime({
     brokerSocketPath: socketPath,
+    brokerToken,
     refreshMarkerPath: env.FCODE_CUA_PERMISSION_BROKER_REFRESH_MARKER?.trim(),
   });
 }

@@ -11,20 +11,7 @@ function nonEmptyString(value: unknown): string | undefined {
   return typeof value === "string" && value.length > 0 ? value : undefined;
 }
 
-/**
- * 这个 cell 是否在用 Computer Use。
- *
- * 只做布尔判定，不从源码里抽取动作名：源码形态会随 node_repl SDK 演进（如改成 `getApp()` +
- * 绑定对象 + `computer.*`），字符串匹配迟早一种都命中不了；测试夹具也容易喂入 SDK 从不
- * 产出的扁平形态，让 CI 假绿。
- *
- * 锚点选 `setupComputerUseRuntime`，因为它是模型**必须原样照抄**的引导语句，且这是架构强制
- * 而非文档软要求：FCode 的 node_repl 每个 cell 都是全新 Worker、SDK 绑定不跨 cell，所以
- * 参考文档写明「The first executable statement of every CUA cell must be this bootstrap,
- * and the bootstrap and the actions must be in the same cell」。凡用 CUA 的 cell 必然含它。
- *
- * Browser Use 的 `agent.browsers.*` 不含该引导，不会命中。
- */
+/** Presentation hint only. Source text never grants authority to a tool call. */
 function usesComputerUse(input: unknown): boolean {
   const code = nonEmptyString(asRecord(input).code);
   if (!code) return false;
@@ -47,7 +34,14 @@ export function mapComputerUseOperationEvent(
   const payload = asRecord(event.payload);
   switch (event.type) {
     case SessionEventType.TurnStarted:
-      return turnId ? { ...baseEvent(event), kind: "turn-started", turnId } : undefined;
+      return turnId ? {
+        ...baseEvent(event), kind: "turn-started", turnId,
+        ...(nonEmptyString(payload.inputId) ? { inputId: String(payload.inputId) } : {}),
+        ...(nonEmptyString(payload.messageId) ? { messageId: String(payload.messageId) } : {}),
+        traceId: String(event.traceId),
+        humanUser: !payload.inputSource && !payload.originMeta && !payload.backgroundSource &&
+          !payload.automationId && !payload.offPeakTaskId && payload.inputVisibility !== "model-only",
+      } : undefined;
     case SessionEventType.TurnComplete:
       return turnId ? { ...baseEvent(event), kind: "turn-completed", turnId } : undefined;
     case SessionEventType.TurnError:
@@ -82,6 +76,12 @@ export function mapComputerUseOperationEvent(
     }
     case SessionEventType.SessionEnded:
       return { ...baseEvent(event), kind: "session-closed" };
+    case SessionEventType.ToolCallResult:
+    case SessionEventType.ToolCallError: {
+      const toolCallId = nonEmptyString(payload.toolCallId);
+      return toolCallId ? { ...baseEvent(event), kind: "tool-completed", toolCallId,
+        ...(turnId ? { turnId } : {}) } : undefined;
+    }
     default:
       return undefined;
   }

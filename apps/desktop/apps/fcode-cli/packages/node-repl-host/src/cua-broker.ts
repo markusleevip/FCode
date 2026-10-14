@@ -1,11 +1,12 @@
 import { randomBytes, randomUUID, timingSafeEqual } from "node:crypto";
 import { rm } from "node:fs/promises";
-import { createServer, type Server, type Socket } from "node:net";
+import { createServer, type Socket } from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { ComputerUseRuntime, ComputerUseRuntimeContext } from "@fcode/cua";
 import type { Logger } from "@fcode/contracts";
 import type { NodeReplCuaBrokerConnection } from "./cua-bridge.js";
+import { canonicalAction, CuaControlError, controlErrorDetails } from "@fcode/cua/control-contract";
 
 const MAX_REQUEST_BYTES = 1024 * 1024;
 
@@ -19,14 +20,18 @@ export function createNodeReplCuaBroker(input: {
   runtime: ComputerUseRuntime;
   logger?: Logger;
   platform?: NodeJS.Platform | string;
+  context: ComputerUseRuntimeContext;
 }): NodeReplCuaBroker {
   const socketPath =
     input.platform === "win32"
       ? `\\\\.\\pipe\\fcode-node-repl-cua-${randomUUID()}`
       : join(tmpdir(), `znrc-${randomUUID()}.sock`);
   const token = randomBytes(32).toString("hex");
+  const trustedContext = structuredClone(input.context);
+  const sockets = new Set<Socket>();
   const server = createServer((socket) => {
-    void handleSocket(socket, input.runtime, token).catch((error) => {
+    sockets.add(socket); socket.once("close", () => sockets.delete(socket));
+    void handleSocket(socket, input.runtime, token, trustedContext).catch((error) => {
       input.logger?.warn("Node REPL CUA broker request failed", {
         event: "node_repl.cua_broker.request.failed",
         error: error instanceof Error ? error.message : String(error),
@@ -48,6 +53,7 @@ export function createNodeReplCuaBroker(input: {
     connection: { socketPath, token },
     ready,
     close: async () => {
+      for (const socket of sockets) socket.destroy(); sockets.clear();
       await ready.catch(() => undefined);
       if (server.listening) {
         await new Promise<void>((resolve, reject) => {
@@ -63,6 +69,7 @@ async function handleSocket(
   socket: Socket,
   runtime: ComputerUseRuntime,
   token: string,
+  trustedContext: ComputerUseRuntimeContext,
 ): Promise<void> {
   const abortController = new AbortController();
   let completed = false;
@@ -88,12 +95,17 @@ async function handleSocket(
     }
     requestId = payload.id;
     const context = parseContext(payload.context);
+    if (canonicalAction(context) !== canonicalAction(trustedContext)) {
+      const fields = [...new Set([...Object.keys(context), ...Object.keys(trustedContext)])]
+        .filter((field) => canonicalAction(context[field as keyof ComputerUseRuntimeContext]) !==
+          canonicalAction(trustedContext[field as keyof ComputerUseRuntimeContext])).sort();
+      throw new Error(`Computer Use Worker cannot replace its parent call context (fields: ${fields.join(", ")}).`);
+    }
     const result = await runtime.execute({
-      // 这里把 capability method 适配到 staging runtime 的内部 handler；
-      // 外层 SDK/bridge 不再构造或调用 MCP tool envelope。
+      // Keep the parent comparison baseline private from runtime mutations.
       toolName: payload.method as never,
       arguments: payload.input,
-      context,
+      context: structuredClone(trustedContext),
       signal: abortController.signal,
     });
     completed = true;
@@ -102,7 +114,11 @@ async function handleSocket(
     completed = true;
     if (socket.writable) {
       socket.end(
-        `${JSON.stringify({ id: requestId ?? null, ok: false, error: error instanceof Error ? error.message : String(error) })}\n`,
+        `${JSON.stringify({ id: requestId ?? null, ok: false,
+          error: error instanceof Error ? error.message : String(error),
+          ...(error instanceof CuaControlError && typeof error.code === "string" &&
+              /^[a-z][a-z0-9_]{0,127}$/.test(error.code)
+            ? { errorCode: error.code, errorDetails: controlErrorDetails(error) } : {}) })}\n`,
       );
     }
   }
@@ -122,6 +138,11 @@ function parseContext(value: unknown): ComputerUseRuntimeContext {
   if (!value || typeof value !== "object")
     throw new Error("Computer Use request context is missing");
   const context = value as Record<string, unknown>;
+  const fields = ["sessionId", "runtimeScope", "workspaceKey", "workspacePath", "workspaceIdentity",
+    "remoteSessionId", "turnId", "toolCallId", "clientMode", "deliveryKind", "trace"];
+  if (Object.keys(context).some((key) => !fields.includes(key)) || context.runtimeScope !== "main") {
+    throw new Error("Unknown Computer Use scope or context field.");
+  }
   if (typeof context.sessionId !== "string" || !context.sessionId.trim()) {
     throw new Error("Computer Use request context is missing sessionId");
   }
@@ -136,7 +157,7 @@ function parseContext(value: unknown): ComputerUseRuntimeContext {
   if (!workspaceKey) throw new Error("Computer Use request context is missing workspaceKey");
   return {
     sessionId: context.sessionId,
-    runtimeScope: context.runtimeScope === "subagent" ? "subagent" : "main",
+    runtimeScope: "main",
     workspaceKey,
     ...(workspacePath ? { workspacePath } : {}),
     ...(workspaceIdentity ? { workspaceIdentity } : {}),
@@ -144,6 +165,7 @@ function parseContext(value: unknown): ComputerUseRuntimeContext {
       ? { remoteSessionId: context.remoteSessionId }
       : {}),
     ...(typeof context.turnId === "string" ? { turnId: context.turnId } : {}),
+    ...(typeof context.toolCallId === "string" ? { toolCallId: context.toolCallId } : {}),
     ...(context.clientMode === "web-remote-replayable" ||
     context.clientMode === "desktop-continuous"
       ? { clientMode: context.clientMode }

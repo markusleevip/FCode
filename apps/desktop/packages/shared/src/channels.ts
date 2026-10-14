@@ -157,6 +157,13 @@ export type ServiceChannelName = (typeof ServiceChannels)[keyof typeof ServiceCh
 
 /** Electron IPC 频道名。仅在 preload ↔ main 之间使用。 */
 export const PlatformChannels = {
+  PrepareComputerUseIntent: "fcode:prepare-computer-use-intent",
+  GetComputerUseCredentialUi: "fcode:get-computer-use-credential-ui",
+  GetComputerUsePanel: "fcode:get-computer-use-panel",
+  ComputerUsePanelAction: "fcode:computer-use-panel-action",
+  ComputerUsePanelChanged: "fcode:computer-use-panel-changed",
+  FocusComputerUseCredentialUi: "fcode:focus-computer-use-credential-ui",
+  ComputerUseCredentialUiChanged: "fcode:computer-use-credential-ui-changed",
   /** 打开系统目录选择框 */
   SelectDirectory: "fcode:select-directory",
   /** 打开系统文件选择框 */
@@ -545,6 +552,7 @@ export const HostMessageTypes = {
   OffPeakRun: "off-peak-run",
   /** main → host：browser-use 命令执行结果（CDP 执行完回传，按 requestId 关联） */
   BrowserExecuteResult: "browser-execute-result",
+  ComputerUseControlResult: "computer-use-control-result",
   /** main → host：本地视频 canonical path 授权结果 */
   LocalMediaPreviewPathAuthorizeResult: "local-media-preview-path-authorize-result",
   /** Main → Host：全局前台 FCode 窗口派生的 producer focus fact。 */
@@ -640,6 +648,7 @@ export const HostResponseTypes = {
   OffPeakSchedulerWakeRequest: "off-peak-scheduler-wake-request",
   /** host → main：执行一条 browser-use 命令（main 用 WebContentsView+CDP 执行，按 requestId 关联） */
   BrowserExecuteRequest: "browser-execute-request",
+  ComputerUseControlRequest: "computer-use-control-request",
   /** host → main：请求授权 Agent 已精确校验的本地视频路径 */
   LocalMediaPreviewPathAuthorizeRequest: "local-media-preview-path-authorize-request",
   /** host → main：RPC 网络遥测批次（channel.command 成功率/耗时） */

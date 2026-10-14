@@ -1,6 +1,7 @@
 const UNAVAILABLE_TEXT = "Computer Use is not available in this build.";
 
-export function createComputerUseRuntime(_options) {
+export function createComputerUseRuntime(options) {
+  if (options?.brokerSocketPath && options?.brokerToken) return createComputerUseRuntimeClient(options);
   return {
     async execute() {
       return {
@@ -12,3 +13,4 @@ export function createComputerUseRuntime(_options) {
     async dispose() {},
   };
 }
+import { createComputerUseRuntimeClient } from "./runtime-client-node.js";

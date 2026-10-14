@@ -1,11 +1,51 @@
 {
   "name": "@fcode/cua",
-  "version": "0.6.3",
+  "version": "0.6.4",
   "private": true,
-  "description": "API-compatible placeholder package for Computer Use. This build ships without Computer Use: every runtime surface reports unavailable and fails closed.",
+  "description": "Computer Use contracts, Host authority, private REPL transport and macOS native session adapter.",
   "license": "Apache-2.0",
   "type": "module",
   "exports": {
+    "./windows-desktop-contract": {
+      "types": "./windows-desktop-contract.d.ts",
+      "import": "./windows-desktop-contract.js"
+    },
+    "./windows-native-contract": {
+      "types": "./windows-native-contract.d.ts",
+      "import": "./windows-native-contract.js"
+    },
+    "./windows-native-session/node": {
+      "types": "./windows-native-session-node.d.ts",
+      "import": "./windows-native-session-node.js"
+    },
+    "./chrome-pipe/node": {
+      "types": "./chrome-pipe-node.d.ts",
+      "import": "./chrome-pipe-node.js"
+    },
+    "./control-transport/node": {
+      "types": "./control-transport-node.d.ts",
+      "import": "./control-transport-node.js"
+    },
+    "./invocation-registry": {
+      "types": "./invocation-registry.d.ts",
+      "import": "./invocation-registry.js"
+    },
+    "./native-session/node": {
+      "types": "./native-session-node.d.ts",
+      "import": "./native-session-node.js"
+    },
+    "./control-contract": {
+      "types": "./control-contract.d.ts",
+      "import": "./control-contract.js"
+    },
+    "./control-geometry": {
+      "types": "./control-geometry.d.ts",
+      "import": "./control-geometry.js"
+    },
+    "./control-authority": {
+      "types": "./control-authority.d.ts",
+      "import": "./control-authority.js"
+    },
     ".": {
       "types": "./index.d.ts",
       "import": "./index.js"
@@ -53,6 +93,10 @@
     "./broker/helperHealth": {
       "types": "./broker-helper-health.d.ts",
       "import": "./broker-helper-health.js"
+    },
+    "./desktop-contract": {
+      "types": "./desktop-contract.d.ts",
+      "import": "./desktop-contract.js"
     }
   }
 }

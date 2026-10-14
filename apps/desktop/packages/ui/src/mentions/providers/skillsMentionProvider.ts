@@ -16,6 +16,7 @@ export function mapSkillsToMentionItemsForTest(
     path: string;
     scope: SkillScope;
     pluginName?: string;
+    pluginId?: string;
   }>,
   locale?: Locale,
 ): MentionItem[] {
@@ -51,6 +52,7 @@ export function mapSkillsToMentionItemsForTest(
       data: {
         path: skill.path,
         scope: skill.scope,
+        ...(skill.pluginId ? { pluginId: skill.pluginId } : {}),
       },
     };
   });

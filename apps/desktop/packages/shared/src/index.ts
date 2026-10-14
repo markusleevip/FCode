@@ -303,3 +303,4 @@ export * from "./clientConfig.js";
 export * from "./pluginStoreOrdering.js";
 export * from "./session-debug.js";
 export * from "./provider-native-auth.js";
+export * from "./computer-use-control.js";

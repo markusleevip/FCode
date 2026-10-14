@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { existsSync, rmSync } from "node:fs";
+import { existsSync, readFileSync, rmSync } from "node:fs";
 import { join, resolve } from "node:path";
 import process from "node:process";
 import {
@@ -70,6 +70,18 @@ function isNativeSearchReady() {
 }
 
 const REQUIRED_LOCAL_RUNTIME_ASSETS = [
+  {
+    label: "Computer Use capability manifest",
+    script: "prepare:cua-helper",
+    isReady: () => {
+      try {
+        const value = JSON.parse(readFileSync(join(desktopRoot, "dist-cua-helper", "capability.json"), "utf8"));
+        return value.available === false || (value.protocolVersion === 4 && value.desktopObservation === true && value.desktopInput === true && value.physicalEscapeTakeover === true && value.axBatchObservation === true && value.normalBrowserUi === true && value.applicationLaunch === true && value.applicationWindowUi === true && value.managedBrowser === true && value.credentialInput === true && value.controlUi === true && value.arch === target.arch &&
+          value.inputRoutings?.includes("background") && existsSync(join(desktopRoot, "dist-cua-helper",
+            value.appName, "Contents", "MacOS", "fcode-cua-helper")));
+      } catch { return false; }
+    },
+  },
   ...(nativeSearchReleasePlan.enabled
     ? [
         {

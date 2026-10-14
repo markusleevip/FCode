@@ -91,6 +91,13 @@ const browserUseRequiredRuntimePaths = [
 ];
 const officialPluginPackages = [
   {
+    packageName: "@fcode/computer-use-plugin",
+    relativePath: "apps/fcode-cli/packages/fcode-cua-plugin",
+    requiresRuntime: false,
+    requiredSeedPaths: ["scripts/computer-use-client.mjs", "docs/computer-use.md", "docs/windows-computer-use.md", "skills/computer-use/SKILL.md"],
+    stagedPath: "packages/fcode-cua-plugin",
+  },
+  {
     // browser-use 只携带自己的 client script 与 skill/docs；node_repl MCP runtime 归
     // @fcode/node-repl-host（见上方常量注释）。
     packageName: "@fcode/browser-use-plugin",

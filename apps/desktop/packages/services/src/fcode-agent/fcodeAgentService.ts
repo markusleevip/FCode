@@ -940,6 +940,7 @@ interface CreateFCodeAgentServiceOptions extends Omit<
   };
   /** desktop-local Host 注入；只消费已校验、已去重的 live session event。 */
   cuaOperationStateReporter?: CuaOperationStateReporter;
+  computerUseSubmission?: ComputerUseSubmissionPort;
   onCuaPipSessionLifecycle?: (
     workspace: CuaOperationWorkspaceTarget,
     event: Exclude<PipSessionEvent, { kind: "focus-changed" }>,
@@ -1956,6 +1957,9 @@ export function createFCodeAgentService(
         if (message.method === fcodeProtocolMethods.computerUseOperationEvent) {
           const parsed = fcodeComputerUseOperationEventSchema.safeParse(message.params);
           if (parsed.success) {
+            if (!workspace.workspaceIdentity?.trim()) {
+              options?.computerUseSubmission?.acceptOperationEvent(resolveWorkspaceKey(workspace), parsed.data);
+            }
             // v4 会话不会投影 legacy session/event，CUA 提示必须直接消费 runtime sideband，
             // 避免把两条独立事件流的 sequenceNumber/seq 混为同一顺序域。
             cuaOperationTurnTracker?.accept(workspace, parsed.data);
@@ -4243,7 +4247,7 @@ export function createFCodeAgentService(
 
     async setPluginEnabled(params: FCodeAgentSetPluginEnabledParams) {
       const client = await getPluginManagementClient();
-      return client.request(
+      const result = await client.request(
         fcodeProtocolMethods.pluginsSetEnabled,
         {
           workspace: buildWorkspaceRef(params),
@@ -4255,6 +4259,10 @@ export function createFCodeAgentService(
         fcodePluginsSetEnabledResultSchema,
         { timeoutMs: PLUGIN_MANAGEMENT_REQUEST_TIMEOUT_MS },
       );
+      if (params.pluginId === COMPUTER_USE_PLUGIN_ID && !params.enabled) {
+        await options?.computerUseSubmission?.disableComputerUse?.();
+      }
+      return result;
     },
 
     async listAutomations(params: FCodeAgentWorkspaceTarget) {
@@ -5079,6 +5087,28 @@ export function createFCodeAgentService(
         });
       }
       let envelope = await buildConversationCommandEnvelope(params);
+      const { computerUseInvocation, ...withoutComputerUseInvocation } = envelope;
+      envelope = withoutComputerUseInvocation;
+      if (computerUseInvocation) {
+        const isHumanPrompt = envelope.type === "sendText" ||
+          (envelope.type === "createSession" && Boolean(
+            commandPayloadSchemas.createSession.parse(envelope.payload).firstInput));
+        if (!isHumanPrompt || !options?.computerUseSubmission ||
+            commandClientMode !== "desktop-continuous" || params.workspaceIdentity?.trim() || params.remoteSessionId) {
+          throw new Error("Computer Use requires a trusted local desktop submission.");
+        }
+        const catalog = await client.request(fcodeProtocolMethods.pluginsList, {
+          workspace: buildWorkspaceRef(params),
+        }, fcodePluginsListResultSchema);
+        if (!catalog.plugins.some((plugin) => plugin.id === COMPUTER_USE_PLUGIN_ID && plugin.enabled &&
+            plugin.marketplace === "fcode-plugins-official")) {
+          throw new Error("Enable the official Computer Use plugin before sending this task.");
+        }
+        await options.computerUseSubmission.registerInvocation({
+          token: computerUseInvocation.token, commandId: envelope.commandId,
+          sessionId: envelope.sessionId, workspaceKey: resolveWorkspaceKey(params),
+        });
+      }
       // TTFT 首版只允许可信桌面本地 continuous，手机/远端透传不能开启本地观测。
       if (
         commandClientMode !== "desktop-continuous" ||
@@ -5670,3 +5700,4 @@ export function createFCodeAgentService(
     },
   };
 }
+import { COMPUTER_USE_PLUGIN_ID, type ComputerUseSubmissionPort } from "@fcode/shared";

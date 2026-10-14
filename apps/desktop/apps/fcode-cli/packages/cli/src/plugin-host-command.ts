@@ -6,6 +6,7 @@ import {
   getCapturedFCodeCuaBrokerCredentials,
   FCODE_CUA_BROKER_SOCKET_ENV_KEY,
   FCODE_CUA_NODE_REPL_HOST_ENV_KEY,
+  FCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY,
 } from "@fcode/shared/runtime-env";
 import { FCODE_CUA_OFFICIAL_PLUGIN_ID, FCODE_PLUGIN_ID_ENV_KEY } from "@fcode/shared/mcp";
 import type { RunContext } from "@fcode/shared-types";
@@ -53,11 +54,13 @@ export async function runPluginHostCommand(ctx: RunContext, argv: string[]): Pro
 
     const originalArgv = process.argv;
     const originalBrokerSocket = process.env[FCODE_CUA_BROKER_SOCKET_ENV_KEY];
+    const originalAuthority = process.env[FCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY];
     // shared node_repl 把同一凭据组恢复到环境，由 broker bridge 读取；旧的独立 CUA
     // MCP 不再拥有执行入口。
     process.argv = [process.execPath, serverPath, ...serverArgs];
     if (capturedBrokerCredentials.socket && process.env[FCODE_CUA_NODE_REPL_HOST_ENV_KEY] === "1") {
       process.env[FCODE_CUA_BROKER_SOCKET_ENV_KEY] = capturedBrokerCredentials.socket;
+      process.env[FCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY] = capturedBrokerCredentials.pluginAuthority;
     }
     try {
       await module.main();
@@ -68,6 +71,8 @@ export async function runPluginHostCommand(ctx: RunContext, argv: string[]): Pro
       } else {
         process.env[FCODE_CUA_BROKER_SOCKET_ENV_KEY] = originalBrokerSocket;
       }
+      if (originalAuthority === undefined) delete process.env[FCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY];
+      else process.env[FCODE_CUA_PLUGIN_AUTHORITY_ENV_KEY] = originalAuthority;
     }
 
     return 0;

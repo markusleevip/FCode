@@ -1,5 +1,10 @@
 import { resolveFCodePath } from "@fcode/shared/branding-paths";
 import { createLocalTtftExporter } from "./localTtftExporter.js";
+import { createDesktopComputerUseControl } from "./desktopComputerUseControl.js";
+import { dispatchDesktopComputerUse } from "./desktopComputerUsePlatform.js";
+import { createDesktopWindowsComputerUseControl } from "./desktopWindowsComputerUseMain.js";
+import { runWindowsComputerUseIdentityDiagnostic } from "./desktopWindowsComputerUseIdentityDiagnostic.js";
+import { registerDesktopComputerUseIpc } from "./desktopComputerUseIpc.js";
 /* eslint-disable max-lines */
 import "./desktopEarlyDataBaseDirBootstrap.js";
 import "./desktopEarlyChromiumHardwareAccelerationBootstrap.js";
@@ -613,6 +618,15 @@ const explicitQuitRef = { current: false };
 let appQuitPreparationInFlight: Promise<void> | null = null;
 let hasPreparedAppQuit = false;
 const windowWorkspaceMap = new Map<number, Set<string>>();
+const desktopComputerUseOptions = {
+  helperResourceRoot: app.isPackaged ? join(process.resourcesPath, "cua-helper") : resolve(import.meta.dirname, "../..", "dist-cua-helper"),
+  getWindow: (ownerId: string) => getMainApplicationWindows().find((win) => String(win.id) === ownerId),
+};
+const desktopComputerUseControl = dispatchDesktopComputerUse(process.platform, {
+  macOS: () => createDesktopComputerUseControl(desktopComputerUseOptions),
+  windows: () => createDesktopWindowsComputerUseControl(desktopComputerUseOptions),
+  unavailable: () => createDesktopComputerUseControl(desktopComputerUseOptions),
+});
 const windowTaskRealtimeHostIdMap = new Map<number, string>();
 const windowUnreadCountMap = new Map<number, number>();
 const windowHostProcessMap = new Map<number, ElectronUtilityProcess>();
@@ -1698,7 +1712,7 @@ function createWindowInstance(startupBootstrap: StartupWindowBootstrap = {}) {
           }),
         },
         {
-          hostProcessLocalEnv,
+          hostProcessLocalEnv: { ...hostProcessLocalEnv, ...desktopComputerUseControl.capabilityEnv() },
           desktopContextPromptEnabled: resolveDesktopContextPromptEnabledForHost,
           logger,
           broadcastHub,
@@ -1797,6 +1811,8 @@ function createWindowInstance(startupBootstrap: StartupWindowBootstrap = {}) {
           // browser-use：main 用 WebContentsView+CDP 执行命令。
           handleBrowserExecuteRequest: ({ win: browserWin, ...request }) =>
             runBrowserCommandOnView({ win: browserWin, ...request }),
+          handleComputerUseControlRequest: desktopComputerUseControl.handleHostCommand,
+          onComputerUseHostExited: desktopComputerUseControl.revokeHost,
         },
         {
           taskRealtime: {
@@ -1874,7 +1890,9 @@ app.on("open-url", (event, url) => {
     resolveApplicationWindow: () => getApplicationWindowsExcludingCuaIndicator()[0] ?? null,
   });
 });
-const gotTheLock = app.requestSingleInstanceLock(createDeepLinkSingleInstanceData(process.argv));
+const identityDiagnostic = process.platform === "win32" && !app.isPackaged &&
+  /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(process.env.FCODE_WINDOWS_CUA_IDENTITY_PROBE ?? "");
+const gotTheLock = identityDiagnostic || app.requestSingleInstanceLock(createDeepLinkSingleInstanceData(process.argv));
 if (!gotTheLock) {
   app.quit();
 }
@@ -1916,6 +1934,8 @@ app.on("second-instance", (_event, argv, _workingDirectory, additionalData) => {
 
 app.whenReady().then(async () => {
   markMainLaunchAppReady();
+  if (process.platform === "win32" && !app.isPackaged && process.env.FCODE_WINDOWS_CUA_IDENTITY_PROBE &&
+      await runWindowsComputerUseIdentityDiagnostic(desktopComputerUseOptions.helperResourceRoot)) return;
   installLocalMediaPreviewProtocol(session.defaultSession.protocol, {
     isPathAuthorized: localMediaPreviewPathRegistry.isAuthorized,
   });
@@ -2043,6 +2063,16 @@ app.whenReady().then(async () => {
     },
     logger,
   });
+
+  registerDesktopComputerUseIpc({
+    ownsWindow: (win) => getMainApplicationWindows().includes(win),
+    prepareIntent: desktopComputerUseControl.prepareIntent,
+    getCredentialUi: desktopComputerUseControl.getCredentialUi,
+    focusCredentialUi: desktopComputerUseControl.focusCredentialUi,
+    getPanel: desktopComputerUseControl.getPanel,
+    panelAction: desktopComputerUseControl.panelAction,
+  });
+  app.once("will-quit", () => { void desktopComputerUseControl.dispose(); });
 
   registerPlatformIpcHandlers({
     logger,
@@ -2269,6 +2299,7 @@ app.on("browser-window-created", (_, win) => {
     browserScreenshotSurfaceCoordinator.handleWindowDestroyed(win.id);
     browserGuestManager.closeWindow(win.id);
     windowWorkspaceMap.delete(win.id);
+    desktopComputerUseControl.revokeOwner(String(win.id));
     windowTaskRealtimeHostIdMap.delete(win.id);
     if (windowUnreadCountMap.delete(win.id)) {
       syncApplicationUnreadBadge(windowUnreadCountMap);

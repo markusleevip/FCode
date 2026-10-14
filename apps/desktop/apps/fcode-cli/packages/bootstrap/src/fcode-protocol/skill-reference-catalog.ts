@@ -61,5 +61,6 @@ function toReferenceCatalogEntry(skill: SkillMetadata): FCodeSkillReferenceCatal
     scope,
     enabled: true,
     ...(skill.pluginName ? { pluginName: skill.pluginName } : {}),
+    ...(skill.pluginId ? { pluginId: skill.pluginId } : {}),
   };
 }

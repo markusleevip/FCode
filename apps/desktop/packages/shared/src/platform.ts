@@ -505,7 +505,7 @@ export type DesktopCommandId = (typeof DesktopCommandIds)[keyof typeof DesktopCo
  * CUA Helper 的操作系统支持态（macOS 版本门槛判定结果，主进程经
  * GetCuaOsSupport 下发给 renderer）。
  * - supported：满足门槛（含非版本因素，如解析失败时按宽松处理）。
- * - macos-below-minimum：macOS 低于承诺地板（Helper LSMinimumSystemVersion 12.0），
+ * - macos-below-minimum: below the Helper macOS 14.0 deployment target.
  *   低版本上 Helper 会被 LaunchServices -10825 拒启，表象是授权反复无响应。
  * - not-applicable：非 darwin 平台，无 macOS 版本门槛概念。
  */
@@ -644,6 +644,13 @@ export interface IPlatformService {
   openCuaPermissionOnboarding?(
     options?: OpenCuaPermissionOnboardingOptions,
   ): Promise<CuaAccessibilitySettingsResult>;
+  prepareComputerUseIntent?(input: ComputerUseIntentRequest): Promise<{ token: string }>;
+  getComputerUsePanel?(): Promise<ComputerUsePanelState>;
+  computerUsePanelAction?(request: ComputerUsePanelRequest): Promise<ComputerUsePanelState>;
+  onComputerUsePanelChanged?(callback: (state: ComputerUsePanelState) => void): () => void;
+  getComputerUseCredentialUi?(): Promise<ComputerUseCredentialUiState>;
+  focusComputerUseCredentialUi?(sessionId: string): Promise<void>;
+  onComputerUseCredentialUiChanged?(callback: (state: ComputerUseCredentialUiState) => void): () => void;
   /** 取消本 renderer 以 operationId 发起的 onboarding participant。Desktop only。 */
   cancelCuaPermissionOnboarding?(operationId: string): void;
   /**
@@ -963,3 +970,4 @@ export interface IPlatformService {
    */
   getDeviceId(): string;
 }
+import type { ComputerUseIntentRequest, ComputerUseCredentialUiState, ComputerUsePanelState, ComputerUsePanelRequest } from "./computer-use-control.js";

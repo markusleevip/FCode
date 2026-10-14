@@ -1,4 +1,5 @@
 import { databaseStartupControlSchema, databaseStartupStateSchema } from "./database-startup.js";
+import { hostComputerUseCommandSchema, hostComputerUseResultSchema } from "./computer-use-control.js";
 import {
   sessionCreateTelemetrySchema,
   automationSessionCreateTelemetrySchema,
@@ -492,6 +493,7 @@ export const hostIncomingMessageSchema = z.discriminatedUnion("type", [
   hostCronRunMessageSchema,
   hostOffPeakRunMessageSchema,
   hostBrowserExecuteResultMessageSchema,
+  hostComputerUseResultSchema,
   hostLocalMediaPreviewPathAuthorizeResultMessageSchema,
   hostCuaPipFocusChangedMessageSchema,
   hostProviderProvisioningExecuteMessageSchema,
@@ -1011,6 +1013,7 @@ export const hostResponseMessageSchema = z.discriminatedUnion("type", [
   hostSessionRouteAnnounceResponseSchema,
   hostSessionMessageDeliverResultResponseSchema,
   hostBrowserExecuteRequestResponseSchema,
+  hostComputerUseCommandSchema,
   hostLocalMediaPreviewPathAuthorizeRequestResponseSchema,
   hostNetworkTelemetryBatchResponseSchema,
   hostProviderProvisioningSourceChangedResponseSchema,

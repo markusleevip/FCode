@@ -577,6 +577,23 @@ contextBridge.exposeInMainWorld("fcode", {
   /** 打开 FCode Computer Use 完整权限引导 */
   openCuaPermissionOnboarding: (options?: OpenCuaPermissionOnboardingOptions) =>
     ipcRenderer.invoke(PlatformChannels.OpenCuaPermissionOnboarding, options),
+  prepareComputerUseIntent: (input: ComputerUseIntentRequest) => ipcRenderer.invoke(PlatformChannels.PrepareComputerUseIntent, input),
+  getComputerUsePanel: (): Promise<ComputerUsePanelState> => ipcRenderer.invoke(PlatformChannels.GetComputerUsePanel),
+  computerUsePanelAction: (request: ComputerUsePanelRequest): Promise<ComputerUsePanelState> =>
+    ipcRenderer.invoke(PlatformChannels.ComputerUsePanelAction, request),
+  onComputerUsePanelChanged: (callback: (state: ComputerUsePanelState) => void) => {
+    const listener = (_event: unknown, state: ComputerUsePanelState) => callback(state);
+    ipcRenderer.on(PlatformChannels.ComputerUsePanelChanged, listener);
+    return () => ipcRenderer.removeListener(PlatformChannels.ComputerUsePanelChanged, listener);
+  },
+  getComputerUseCredentialUi: (): Promise<ComputerUseCredentialUiState> => ipcRenderer.invoke(PlatformChannels.GetComputerUseCredentialUi),
+  focusComputerUseCredentialUi: (sessionId: string): Promise<void> =>
+    ipcRenderer.invoke(PlatformChannels.FocusComputerUseCredentialUi, { sessionId }),
+  onComputerUseCredentialUiChanged: (callback: (state: ComputerUseCredentialUiState) => void) => {
+    const listener = (_event: unknown, state: ComputerUseCredentialUiState) => callback(state);
+    ipcRenderer.on(PlatformChannels.ComputerUseCredentialUiChanged, listener);
+    return () => ipcRenderer.removeListener(PlatformChannels.ComputerUseCredentialUiChanged, listener);
+  },
   /** 只取消当前 renderer 以 operationId 发起的 onboarding participant。 */
   cancelCuaPermissionOnboarding: (operationId: string) =>
     ipcRenderer.send(PlatformChannels.CancelCuaPermissionOnboarding, {
@@ -909,3 +926,4 @@ window.addEventListener("message", (event) => {
   const parsed = databaseStartupControlSchema.safeParse(event.data.control);
   if (parsed.success) ipcRenderer.send(InternalChannels.DatabaseStartupControl, parsed.data);
 });
+import type { ComputerUseIntentRequest, ComputerUseCredentialUiState, ComputerUsePanelState, ComputerUsePanelRequest } from "@fcode/shared";

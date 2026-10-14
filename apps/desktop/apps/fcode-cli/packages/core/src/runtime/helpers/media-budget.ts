@@ -18,6 +18,7 @@ import {
   officialCuaRasterUnavailableBlock,
 } from "./official-cua-media.js";
 import { findLatestRealUserMessageIndex } from "./conversation.js";
+import { projectComputerUseScreenshots } from "./computer-use-screenshot-window.js";
 import {
   projectMessagesForInputFormat,
   type MediaCapabilityProjection,
@@ -55,7 +56,7 @@ export function projectMessagesForModelMediaPolicy(
 ): ModelMediaPolicyProjection {
   // 直接调用 Model 的辅助链路曾只补 capability、漏掉聚合预算；两阶段必须
   // 在同一个请求策略边界串联，避免新增消费者继续手工拼装而遗漏其中一半。
-  const capabilityProjection = projectMessagesForInputFormat(messages, inputFormat);
+  const capabilityProjection = projectMessagesForInputFormat(projectComputerUseScreenshots(messages).messages, inputFormat);
   const mediaBudgetProjection = projectMessagesForMediaBudget(capabilityProjection.messages, {
     latestRealUserMessageIndex: options.latestRealUserMessageIndex,
   });

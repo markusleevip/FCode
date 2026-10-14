@@ -147,6 +147,21 @@ export const FCODE_MCP_BROWSER_SCREENSHOT_CONTENT_INDICES_META_KEY =
  * `FCODE_MCP_BROWSER_SCREENSHOT_CONTENT_INDICES_META_KEY` 的处置）。
  */
 export const FCODE_MCP_NODE_REPL_CUA_APP_META_KEY = "fcode/nodeReplCuaApp";
+/** Data minimization only: this cannot grant input or frame authority. */
+export const FCODE_MCP_NODE_REPL_TRANSIENT_MEDIA_META_KEY = "fcode/nodeReplTransientMedia";
+
+/** Host-only per-image provenance, indexed into the final MCP content array. */
+export const FCODE_MCP_CUA_SCREENSHOT_CONTENT_INDICES_META_KEY = "fcode/cuaScreenshotContentIndices";
+
+/** Invalid provenance fails closed instead of falling back to a cell-wide tag. */
+export function readCuaScreenshotContentIndices(result: McpToolCallResult): ReadonlySet<number> {
+  const value = result._meta?.[FCODE_MCP_CUA_SCREENSHOT_CONTENT_INDICES_META_KEY];
+  if (!Array.isArray(value) || value.some((index) =>
+    !Number.isSafeInteger(index) || index < 0 || result.content[index]?.type !== "image")) {
+    return new Set();
+  }
+  return new Set(value as number[]);
+}
 /**
  * 官方 Server MCP 响应头里的 `x-request-id`，附在失败的 tool result 上（值为 string）。
  *
@@ -159,6 +174,8 @@ export const FCODE_MCP_NODE_REPL_CUA_APP_META_KEY = "fcode/nodeReplCuaApp";
 export const FCODE_MCP_SERVER_REQUEST_ID_META_KEY = "fcode/officialMcpServerRequestId";
 
 export interface McpToolDescriptor {
+  /** Adapter-minted identity for the reserved built-in Node REPL, never a server declaration. */
+  hostNodeRepl?: true;
   serverName: string;
   toolName: string;
   name?: string;
@@ -232,6 +249,8 @@ export interface McpCallToolRequest {
   clientMode?: string;
   deliveryKind?: string;
   turnId?: string;
+  /** Actual runtime tool invocation identity; never supplied in model arguments. */
+  toolCallId?: string;
 }
 
 export interface McpCallToolOptions {

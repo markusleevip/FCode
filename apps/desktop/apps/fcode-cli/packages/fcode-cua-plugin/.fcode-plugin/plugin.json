@@ -1,0 +1,8 @@
+{
+  "name": "computer-use",
+  "version": "0.6.34",
+  "description": "Observe and control explicitly authorized local applications through supported FCode Computer Use platform routes.",
+  "author": { "name": "FCode" },
+  "license": "Apache-2.0",
+  "skills": "skills"
+}

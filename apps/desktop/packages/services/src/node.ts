@@ -1370,6 +1370,7 @@ export function createLocalServices(options: {
   };
   /** Windows desktop-local Host 的 CUA turn 状态投影；其它 authority 会在装配层拒绝。 */
   cuaOperationStateReporter?: CuaOperationStateReporter;
+  computerUseSubmission?: ComputerUseSubmissionPort;
 }): ServiceCollection {
   const isDesktopAttachedRemote = options?.serviceAuthorityMode === "desktop-attached-remote";
   // host / remote server 以前直接沿用当前进程环境启动后续服务。
@@ -1893,7 +1894,7 @@ export function createLocalServices(options: {
   // enabled 与 onCuaPipSessionLifecycle 是否挂上，都由 serviceAuthorityMode 单点决定；
   // 提出来命名，避免下面的启动期诊断与真实取值漂移。
   const cuaPipSessionEnabled =
-    process.platform === "darwin" && options?.serviceAuthorityMode === "desktop-local";
+    process.platform === "darwin" && options?.serviceAuthorityMode === "desktop-local" && !options?.computerUseSubmission;
   const cuaPipSessionService = createCuaPipSessionService({
     enabled: cuaPipSessionEnabled,
     resolveCredentials: async () => {
@@ -2165,6 +2166,7 @@ export function createLocalServices(options: {
     spawnFallbackCwd: options?.fcodeAgentSpawnFallbackCwd,
     // browser-use：host→main 执行桥透传给 agent service 的 onRequest browserExecute 路由。
     browserControlExecutor: options?.browserControlExecutor,
+    computerUseSubmission: options?.serviceAuthorityMode === "desktop-local" ? options?.computerUseSubmission : undefined,
     // 官方 Server MCP 身份头：host 是唯一身份权威，Agent 经反向请求索取。
     // Provider 存在性读取正式 Model Selection View；不恢复旧 Provider Snapshot。
     officialMcpAuthHeadersResolver: createOfficialMcpAuthHeadersResolver({
@@ -2211,11 +2213,12 @@ export function createLocalServices(options: {
       // 与 helper 创建同一个门控（isCuaEnabledForContext：dev/internal 特性 OR 官方插件 enablement），
       // 避免 dev mode 下 helper 建了但 resolveSpawnEnv 漏注入 broker env 的割裂。
       const cuaPluginEnabled = isCuaEnabledForContext(context);
+      const mainComputerUseEnv = options?.computerUseSubmission?.getRuntimeEnv?.();
       // 懒启动：darwin 上 spawn 绝不 acquire 拉起 Helper——已有 host（peek，比如刚走过
       // 授权流）则复用其 tuple；否则只注入稳定 socket，SDK 首次 CUA 调用自行拉起
       // （宿主启动/spawn 均不使 Helper 常驻）。win32 保留 acquire（token 模式）。
       const peekedHelper = defaultCuaProductHelperLifecycle.peek()?.helper;
-      const helper = !cuaPluginEnabled
+      const helper = !cuaPluginEnabled || mainComputerUseEnv
         ? undefined
         : peekedHelper && isDefaultCuaProductHelperCurrent(peekedHelper)
           ? peekedHelper
@@ -2230,7 +2233,9 @@ export function createLocalServices(options: {
       // 供后续配置/生命周期 bookkeeping 使用；recovery 只清理 marker，不回收已有 Agent。
       cuaProductHelperWorkspaceRegistry.setEnabled(context, Boolean(cuaProductHelperHost));
       let cuaProductHelperEnv: Record<string, string> = {};
-      if (!helper && cuaPluginEnabled && process.platform === "darwin") {
+      if (mainComputerUseEnv && cuaPluginEnabled) {
+        cuaProductHelperEnv = mainComputerUseEnv;
+      } else if (!helper && cuaPluginEnabled && process.platform === "darwin") {
         // 懒启动：无托管 host 时注入稳定 socket；无 token（身份模式）、无 pluginAuthority
         // （其校验方就是 host，host 缺席时无意义）。SDK ensureBrokerAvailable 负责拉起。
         // pluginAuthority 是 agent 进程内的 config-provenance 随机数（bootstrap 捕获后写进
@@ -2860,3 +2865,4 @@ export async function disposeServiceResourcesAndWait(services: ServiceCollection
     ?.disposeAndWait()
     .catch(() => {});
 }
+import type { ComputerUseSubmissionPort } from "@fcode/shared";

@@ -23,6 +23,7 @@ import {
   normalizeUsage,
 } from "./runner-normalization.js";
 import { stringMetadata } from "./runner-record.js";
+import { fingerprintModelIOPrefix, countProviderBodyImages } from "./runner-debug-message-prefix.js";
 import type {
   AiSdkGenerateTextOptions,
   AiSdkGenerateTextResult,
@@ -48,6 +49,7 @@ interface ModelIOCollectionState {
   firstFingerprint?: string;
   lastFingerprint?: string;
   sampleFingerprints?: string[];
+  prefixFingerprint?: string;
 }
 
 interface ModelIORequestCompactionState {
@@ -693,6 +695,7 @@ function compactModelIORequest(
 
   const body = asRecord(next.body);
   if (body) {
+    next.bodyImageCount = countProviderBodyImages(body);
     const nextBody = { ...body };
     const bodyMessageKeys = {
       collectionKey: "messages",
@@ -773,7 +776,8 @@ function canStoreDeltaFromState(
   return (
     firstFingerprint === previousState.firstFingerprint &&
     lastFingerprint === previousState.lastFingerprint &&
-    hasSameSampleFingerprints(currentMessages, previousState)
+    hasSameSampleFingerprints(currentMessages, previousState) &&
+    previousState.prefixFingerprint === fingerprintModelIOPrefix(currentMessages, previousState.count)
   );
 }
 
@@ -808,6 +812,7 @@ function buildCollectionState(value: unknown): ModelIOCollectionState | undefine
     firstFingerprint: fingerprintValue(value[0]),
     lastFingerprint: fingerprintValue(value[value.length - 1]),
     sampleFingerprints: fingerprintCollectionSamples(value),
+    prefixFingerprint: fingerprintModelIOPrefix(value),
   };
 }
 

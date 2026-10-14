@@ -1,4 +1,5 @@
 import { FCODE_OFFICIAL_PLUGIN_MARKETPLACE } from "@fcode/contracts";
+import { COMPUTER_USE_DISPLAY_NAMES, COMPUTER_USE_DESCRIPTIONS } from "./locales/computer-use.js";
 
 // 内置插件的商店信息 seed（原样写入官方 marketplace.json 的条目 raw，键名与 CDN 目录
 // schema 一致：displayName_i18n / examplePrompts_i18n 等），解析复用 adapter 的
@@ -73,6 +74,8 @@ export const OFFICIAL_BROWSER_USE_REQUIRED_SEED_PATHS = [
 
 const OFFICIAL_CUA_REQUIRED_SEED_PATHS = [
   "docs/computer-use.md",
+  "docs/windows-computer-use.md",
+  "docs/macos-desktop-computer-use.md",
   "scripts/computer-use-client.mjs",
   "skills/computer-use/SKILL.md",
 ] as const;
@@ -103,7 +106,7 @@ export const OFFICIAL_PLUGIN_DEFINITIONS: readonly OfficialPluginDefinition[] = 
       "../../node-repl-host",
       "../../../node-repl-host",
     ],
-    version: "0.6.0",
+    version: "0.6.4",
   },
   {
     listing: {
@@ -324,27 +327,16 @@ export const OFFICIAL_PLUGIN_DEFINITIONS: readonly OfficialPluginDefinition[] = 
     version: "0.2.0",
   },
   {
-    // 产品决策：电脑控制回退为默认关闭，需用户在设置页显式开启。
-    // 因此这里不声明 defaultEnabled——computer-use 携带 MCP server 与系统 Helper 依赖，
-    // 默认开启意味着每个新用户首启即注入整套工具集并拉起 Helper。
-    // 「defaultEnabled 仅限内容型插件」的旧约定随之恢复完整。
-    // 判定式是 enabledPlugins[id] ?? defaultEnabled：曾在设置页手动开过的用户已落盘
-    // 显式 true，不受本次默认值变更影响。改回默认开启时，需同步
-    // packages/shared/src/plugin-marketplaces.ts 的名单（bootstrap 单测机械对照两者）、
-    // isFCodeCuaInternalFeatureEnabled（当前占位构建默认 false）与输入框入口 hidden 默认值的联动语义。
+    // Optional SDK/skill plugin. Enabling it neither starts the native Helper nor authorizes a turn.
     name: "computer-use",
     hostMcpServerNames: ["node_repl"],
-    // 用户露出名统一为「Computer Use / 电脑控制」。包名与 producer 仓库仍保持 fcode-cua，
-    // 以兼容原生 Helper identity；EN 描述基线走 manifest
-    // description，这里只放 zh-CN 覆盖；resolveLocalizedText 在 en-US 时回退到 manifest。
+    // The stable plugin identity is shared with the trusted desktop submission path.
     listing: {
-      author: ZAI_AUTHOR,
+      author: { name: "FCode" },
       category: "productivity",
       displayName: "Computer Use",
-      displayName_i18n: { "zh-CN": "电脑控制" },
-      description_i18n: {
-        "zh-CN": "自动化桌面应用：智能体驱动鼠标、键盘与界面元素，代你完成实际任务。",
-      },
+      displayName_i18n: COMPUTER_USE_DISPLAY_NAMES,
+      description_i18n: COMPUTER_USE_DESCRIPTIONS,
       // 插件更名为 computer-use 后，CDN 图标仍发布在 fcode-cua 目录；沿用资源路径避免 404。
       icon: `${OFFICIAL_PLUGIN_ASSETS_BASE_URL}/fcode-cua/icon.png`,
     },
@@ -355,11 +347,10 @@ export const OFFICIAL_PLUGIN_DEFINITIONS: readonly OfficialPluginDefinition[] = 
       "../../../fcode-cua-plugin",
     ],
     requiredSeedPaths: OFFICIAL_CUA_REQUIRED_SEED_PATHS,
-    // 当前 CUA 为不可用占位包，无需复制 native runtime；避免把本地旧依赖继续带入缓存。
+    // Native resources are packaged by Desktop, never exposed to the model plugin.
     runtimeTopLevelPaths: [],
-    // 这里的 version 追踪上游 fcode-cua runtime 版本，使插件 UI 展示、缓存路径、
-    // marketplace 条目都对齐；具体版本由原子 producer bump 工作流维护。
-    version: "0.6.3",
+    // Bump the cache version when the bundled SDK contract or platform guidance changes.
+    version: "0.6.34",
   },
 ];
 

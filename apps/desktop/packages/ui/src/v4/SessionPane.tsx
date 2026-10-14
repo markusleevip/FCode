@@ -1,4 +1,6 @@
 import { resolveSelectionSideInheritedModel } from "@/lib/selectionSideInheritedModel.js";
+import { ComputerUsePanel } from "./ComputerUsePanel.js";
+import { ComputerUseCredentialNotice } from "./ComputerUseCredentialNotice.js";
 import { useStartPlanRecommendation } from "@/hooks/useStartPlanRecommendation.js";
 import type { SessionCreateSource } from "@fcode/shared";
 import { reportSessionCreate } from "@/lib/sessionCreateTelemetry.js";
@@ -64,6 +66,7 @@ import { buildChatSessionScrollMemoryKey } from "@/lib/chatSessionScrollMemory.j
 import type { MessageFileLinkTarget } from "@/components/ai-elements/message.js";
 import { useServices } from "@/hooks/useServices.js";
 import { useOptionalPlatform } from "@/hooks/usePlatform.js";
+import { COMPUTER_USE_PLUGIN_ID } from "@fcode/shared";
 import type { SessionOpenTrigger } from "@/lib/sessionOpenArmsTelemetry.js";
 import { useDynamicWorkflowAvailability } from "@/hooks/useDynamicWorkflowAvailability.js";
 import { resolveWorkflowResumeHandler } from "@/v4/workflowResumeGate.js";
@@ -1401,6 +1404,7 @@ export function SessionPane({
       telemetrySeed?: ConversationPromptTelemetrySeed,
       onEnvelopeCreated?: (envelope: CommandEnvelope) => void,
       sessionCreateSource?: SessionCreateSource,
+      computerUseSelected = false,
     ): Promise<CommandAck> => {
       const submission = submissionConfigFromCommand(type, payload);
       const acceptRecent = submission
@@ -1418,6 +1422,16 @@ export function SessionPane({
         ...(baseLogEpoch ? { baseLogEpoch } : {}),
       });
       onEnvelopeCreated?.(envelope);
+      let computerUseInvocation: CommandEnvelope["computerUseInvocation"];
+      if (computerUseSelected) {
+        if (!platform?.prepareComputerUseIntent || workspaceIdentity?.trim() || remoteSessionId) {
+          throw new Error("Computer Use requires the local desktop application.");
+        }
+        computerUseInvocation = await platform.prepareComputerUseIntent({
+          pluginId: COMPUTER_USE_PLUGIN_ID, commandId: envelope.commandId,
+          workspaceKey: workspacePath, sessionId: targetSessionId,
+        });
+      }
       // 必须早于第一次上行：transport error/renderer refresh 后仍有可查询线索。
       const groupedDraftTask =
         type === "createSession"
@@ -1457,7 +1471,7 @@ export function SessionPane({
             targetSessionId,
           );
         }
-        ack = await sendCommand(envelope);
+        ack = await sendCommand(computerUseInvocation ? { ...envelope, computerUseInvocation } : envelope);
         if (telemetrySeed?.localTtft && ack.reasonCode === "guard.heldQueueConfirmationStale")
           getLocalTtftObserver()?.confirmationRetry(telemetrySeed.localTtft);
         else if (telemetrySeed?.localTtft)
@@ -1583,6 +1597,8 @@ export function SessionPane({
       provider,
       sendCommand,
       sessionId,
+      platform,
+      remoteSessionId,
       workspaceIdentity,
       workspacePath,
     ],
@@ -2524,6 +2540,8 @@ export function SessionPane({
     ) => {
       let onAcceptedSelection: (() => void) | undefined;
       const dispatchSubmissionCommand = async (...args: Parameters<typeof dispatchCommand>) => {
+        const isPrompt = args[0] === "sendText" || (args[0] === "createSession" && Boolean(args[1].firstInput));
+        if (isPrompt && options?.computerUseSelected) args[8] = true;
         const ack = await dispatchCommand(...args);
         // 在原 accepted 边界写回推荐选择，早于新 Session 的草稿转移；失败不改用户意图。
         if (ack.status === "accepted" && submissionConfigFromCommand(args[0], args[1]))
@@ -3615,6 +3633,10 @@ export function SessionPane({
   // 直接写 onStop={() => handleStop("button")} 每次 render 都换引用，memo 白做，而 composer
   // 恰好是每次输入都可能重渲染的组件。这里固定 button 版的引用，不动 handleStop 的双入口设计。
   const handleStopFromButton = useCallback(() => handleStop("button"), [handleStop]);
+  const handleResumeComputerUse = useCallback(async () => {
+    const result = await dispatchSendText(intl.formatMessage({ id: "computerUse.panel.resumePrompt" }), { computerUseSelected: true });
+    if (result === "blocked" || result === "confirmationRequired") throw new Error("Computer Use continuation was not admitted.");
+  }, [dispatchSendText, intl]);
 
   const handleRetrySubscribe = useCallback(() => {
     void lease?.store.retry();
@@ -4541,6 +4563,8 @@ export function SessionPane({
           snapshot={snapshot}
         />
       ) : null}
+      {sessionId && !readOnly && !remoteSessionId && !workspaceIdentity?.trim() ? <ComputerUsePanel sessionId={sessionId} focused={focused} canResume={!snapshot?.control.canStop} onStopTask={handleStopFromButton} onResume={handleResumeComputerUse} /> : null}
+      {sessionId && !remoteSessionId && !workspaceIdentity?.trim() ? <ComputerUseCredentialNotice sessionId={sessionId} /> : null}
       {composerNode}
       {/* 办公模式显示主动任务推荐；编程模式保留原有小型场景入口。 */}
       {isDraft && (!isOfficeMode || sharedSettings?.proactiveSuggestionsEnabled === true) ? (

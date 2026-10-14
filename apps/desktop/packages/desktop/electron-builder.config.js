@@ -22,6 +22,7 @@ import {
   resolveDesktopProductIdentity,
 } from "./scripts/desktop-product-identity.mjs";
 import { verifyStagedKoffi } from "./scripts/koffi-package-assets.mjs";
+import { finalizePackagedComputerUseHelper } from "./scripts/finalize-cua-helper.mjs";
 const ELECTRON_BUILDER_ARCH = {
   1: "x64",
   3: "arm64",
@@ -511,6 +512,15 @@ export default {
     `node_modules/node-pty/prebuilds/${targetPlatform.key}/**`,
   ],
   beforePack: async (context) => {
+    if (context.electronPlatformName === "darwin") {
+      if (targetPlatform.os !== "darwin" || ELECTRON_BUILDER_ARCH[context.arch] !== targetPlatform.arch) {
+        throw new Error("[electron-builder.config] Computer Use Helper target does not match the macOS package.");
+      }
+      runTimedSync("beforePack:buildPackagedComputerUseHelper", () =>
+        runCommand(process.execPath, [resolve(desktopPackageRoot, "scripts/build-cua-helper.mjs"),
+          "--packaged-host"], { cwd: desktopPackageRoot, stdio: "inherit" }),
+      );
+    }
     runTimedSync("beforePack:restoreTargetNodePtyPrebuild", () =>
       restoreTargetNodePtyPrebuild({ desktopPackageRoot, targetPlatform }),
     );
@@ -580,6 +590,15 @@ export default {
     runTimedSync("afterPack:assertPackagedNodePtyPrebuild", () =>
       assertPackagedNodePtyPrebuild(context),
     );
+    if (context.electronPlatformName === "darwin") {
+      const requiresAdhocHostSignature = runTimedSync("afterPack:bindComputerUseHostArchive", () => finalizePackagedComputerUseHelper(
+        resolve(context.appOutDir, `${context.packager.appInfo.productFilename}.app`, "Contents/Resources"),
+      ));
+      if (requiresAdhocHostSignature && !shouldEnableMacSigning) {
+        // The enclosing GUI must be signed for the local Helper's parent identity check.
+        context.packager.platformSpecificBuildOptions.identity = "-";
+      }
+    }
     if (actualWindowsTarget) {
       await runTimedAsync("afterPack:writeWindowsInstallManifest", () =>
         writeWindowsInstallManifest(context),
@@ -587,6 +606,7 @@ export default {
     }
   },
   extraResources: [
+    { from: "dist-cua-helper", to: "cua-helper", filter: ["**/*"] },
     { from: resolve(workspaceRoot, noticesFileName), to: noticesFileName },
     ...(targetPlatform.os === "darwin"
       ? [

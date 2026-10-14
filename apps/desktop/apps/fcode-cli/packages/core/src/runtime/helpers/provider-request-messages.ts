@@ -3,6 +3,7 @@ import {
   isPresentedInput,
   projectIncomingMessageEntries,
 } from "./provider-entry-origins.js";
+import { projectComputerUseScreenshotEntries, type ScreenshotWindowDiagnostics } from "./computer-use-screenshot-window.js";
 import {
   projectMidConversationSystemEntries,
   moveLegacySystemRemindersAfterToolResultRun,
@@ -33,6 +34,7 @@ export interface ProviderRequestMessageProjectionResult {
     latestRealUserMessageIndex?: number;
     strippedRuntimeMetaCount: number;
     cacheControlIndex?: number;
+    computerUseScreenshots: ScreenshotWindowDiagnostics;
   };
 }
 
@@ -53,8 +55,9 @@ export function buildProviderRequestMessages(input: {
 }): ProviderRequestMessageProjectionResult {
   const useMidConversationSystem = input.useMidConversationSystem !== false;
   const origins = new ProviderEntryOrigins();
+  const screenshots = projectComputerUseScreenshotEntries(input.entries);
   const reorderResult = reorderAttachmentLikeEntries(
-    projectIncomingMessageEntries(input.entries, origins),
+    projectIncomingMessageEntries(screenshots.entries, origins),
   );
   const midSystemProjection = useMidConversationSystem
     ? projectMidConversationSystemEntries(reorderResult.entries, origins)
@@ -87,6 +90,7 @@ export function buildProviderRequestMessages(input: {
     messages,
     sourceEntries,
     diagnostics: {
+      computerUseScreenshots: screenshots.diagnostics,
       bubbledAttachmentEntryCount: reorderResult.bubbledAttachmentEntryCount,
       // 新标记能证明“没有真实用户”；省略索引会让媒体预算按 user role 重新猜来源。
       ...(finalLatestRealUserMessageIndex >= 0 || input.entries.some(isPresentedInput)

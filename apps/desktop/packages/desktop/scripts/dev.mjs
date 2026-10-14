@@ -7,6 +7,8 @@ import { resolve } from "node:path";
 import { setTimeout as sleep } from "node:timers/promises";
 import { prepareDevElectronAppBundle } from "./devElectronAppBundle.mjs";
 import { prepareDevWindowsElectron } from "./devWindowsElectronIcon.mjs";
+import { prepareWindowsDevComputerUse } from "./prepareWindowsDevComputerUse.mjs";
+import { ensureLocalElectronRuntime } from "./ensureLocalElectronRuntime.mjs";
 
 const root = resolve(import.meta.dirname, "..");
 const mainBundle = resolve(root, "out/main/index.js");
@@ -17,25 +19,6 @@ const buildReadyMarkers = [
 ];
 const waitLogIntervalMs = 3_000;
 const require = createRequire(import.meta.url);
-
-function resolveLocalElectronBinary() {
-  const electronPackageJsonPath = require.resolve("electron/package.json");
-  const electronPackageRoot = resolve(electronPackageJsonPath, "..");
-
-  // Windows 下这里之前直接 spawn("electron")，完全依赖 PATH 里恰好能找到本地 bin。
-  // 在 pnpm + PowerShell 场景里，子进程经常只拿到 node 可执行而拿不到 electron 命令，
-  // 导致 dev 脚本卡在 ENOENT，只能手动拆成三个终端绕过。
-  // 这里显式解析当前项目安装的 Electron 二进制，避免跨 shell / 跨平台时 PATH 语义不一致。
-  if (process.platform === "win32") {
-    return resolve(electronPackageRoot, "dist", "electron.exe");
-  }
-
-  if (process.platform === "darwin") {
-    return resolve(electronPackageRoot, "dist", "Electron.app", "Contents", "MacOS", "Electron");
-  }
-
-  return resolve(electronPackageRoot, "dist", "electron");
-}
 
 function probeHttpUrl(url) {
   return new Promise((resolveProbe) => {
@@ -107,29 +90,24 @@ async function waitForReady() {
   }
 }
 
+const electronPackageJsonPath = require.resolve("electron/package.json");
+const electronBinary = await ensureLocalElectronRuntime({ packageJsonPath: electronPackageJsonPath });
 const rendererUrl = await waitForReady();
 console.log("[dev] Starting Electron...");
-
-const electronBinary = resolveLocalElectronBinary();
-let electronCommand = existsSync(electronBinary) ? electronBinary : "electron";
+let electronCommand = electronBinary;
 
 if (process.platform === "win32") {
-  if (!existsSync(electronBinary)) {
-    throw new Error(`Local Electron executable not found: ${electronBinary}`);
-  }
   electronCommand = await prepareDevWindowsElectron({
     electronBinary,
     iconPath: resolve(root, "build/icon.ico"),
     runtimeRoot: resolve(root, "../../.fcode-runtime/desktop-dev-win"),
   });
   console.log(`[dev] Prepared Windows FelixCode executable: ${electronCommand}`);
+  prepareWindowsDevComputerUse({ executable: electronCommand, appRoot: root });
 }
 
-if (process.platform === "darwin" && existsSync(electronBinary)) {
-  // macOS 命令行启动的 raw Electron 没有 CFBundleURLTypes，LaunchServices 会把
-  // fcode:// 交给一个没有项目入口的 Electron 默认壳。给本地启动副本补齐产品
-  // Info.plist 后，线上 Share 页面无需感知 Dev，仍可把链接投递给已运行的 Dev 实例。
-  const electronPackageJsonPath = require.resolve("electron/package.json");
+if (process.platform === "darwin") {
+  // Register the product URL scheme on a private dev copy without changing the dependency.
   const electronPackage = JSON.parse(await readFile(electronPackageJsonPath, "utf8"));
   const electronAppPath = resolve(electronBinary, "../../..");
   const devBundle = await prepareDevElectronAppBundle({
@@ -142,7 +120,7 @@ if (process.platform === "darwin" && existsSync(electronBinary)) {
   console.log(`[dev] Prepared macOS FCode Dev bundle: ${devBundle.appPath}`);
 }
 
-const electron = spawn(electronCommand, ["."], {
+const electron = spawn(electronCommand, [process.platform === "win32" ? root : "."], {
   cwd: root,
   stdio: "inherit",
   env: { ...process.env, ELECTRON_RENDERER_URL: rendererUrl },

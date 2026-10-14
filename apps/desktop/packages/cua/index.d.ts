@@ -6,6 +6,7 @@ export interface ComputerUseRuntimeContext {
   workspaceIdentity?: string;
   remoteSessionId?: string;
   turnId?: string;
+  toolCallId?: string;
   clientMode?: "web-remote-replayable" | "desktop-continuous";
   deliveryKind?: "web-remote-replayable" | "desktop-continuous";
   trace?: Record<string, unknown>;
@@ -26,6 +27,7 @@ export interface ComputerUseRuntime {
 
 export interface ComputerUseRuntimeOptions {
   brokerSocketPath?: string;
+  brokerToken?: string;
   refreshMarkerPath?: string;
   ensureBrokerAvailable?: () => Promise<void>;
   env?: Record<string, string | undefined>;

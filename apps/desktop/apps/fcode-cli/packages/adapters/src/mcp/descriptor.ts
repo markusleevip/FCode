@@ -5,6 +5,7 @@ export function normalizeMcpToolDescriptor(
   tool: unknown,
   timeoutMs?: number,
   official?: boolean,
+  hostNodeRepl?: boolean,
 ): McpToolDescriptor {
   const record = isRecord(tool) ? tool : {};
   const toolName = typeof record.name === "string" ? record.name : "unknown";
@@ -20,6 +21,7 @@ export function normalizeMcpToolDescriptor(
     // 只有 http 官方 MCP 的 tool error 标识才被信任——那种形态的响应来自已校验 origin 的
     // FCode 后端，插件伪造不了（判据与代价见 mcp.port.ts 的 official 字段说明）。
     ...(official ? { official: true } : {}),
+    ...(hostNodeRepl && serverName === "node_repl" && toolName === "js" ? { hostNodeRepl: true as const } : {}),
   };
 }
 

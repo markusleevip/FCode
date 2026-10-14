@@ -1,6 +1,9 @@
 import { isAbsolute, resolve } from "node:path";
 import {
   FCODE_MCP_BROWSER_SCREENSHOT_CONTENT_INDICES_META_KEY,
+  FCODE_MCP_NODE_REPL_TRANSIENT_MEDIA_META_KEY,
+  FCODE_MCP_CUA_SCREENSHOT_CONTENT_INDICES_META_KEY,
+  readCuaScreenshotContentIndices,
   type McpContentBlock,
   type McpToolCallResult,
   type McpToolDescriptor,
@@ -32,6 +35,12 @@ export async function normalizeMcpToolResultForModel(input: {
   result: McpToolCallResult;
   toolName: string;
 }): Promise<McpToolCallResult> {
+  // A third-party server cannot gain provenance by calling itself node_repl.
+  if (!input.descriptor.hostNodeRepl && input.result._meta?.[FCODE_MCP_CUA_SCREENSHOT_CONTENT_INDICES_META_KEY] !== undefined) {
+    const meta = { ...input.result._meta };
+    delete meta[FCODE_MCP_CUA_SCREENSHOT_CONTENT_INDICES_META_KEY];
+    input = { ...input, result: { ...input.result, _meta: meta } };
+  }
   // node_repl 是通用入口，不能把整个 server 标成 official CUA；但 CUA SDK 会在
   // 结构化结果中携带 producer 签发的 integrity metadata。只对这一条结果动态进入
   // exact-raster 路径，既保留 CUA 帧，又不影响同一 server 的 Browser Use 图片。
@@ -41,24 +50,38 @@ export async function normalizeMcpToolResultForModel(input: {
     input.preserveOfficialCuaFrames ||
     (isSharedNodeRepl && hasOfficialCuaFrameAuthority(input.result))
   ) {
-    return await preserveOfficialCuaFrameResult(input.result, {
+    const preserved = await preserveOfficialCuaFrameResult(input.result, {
       imageProcessorPort: input.context.imageProcessorPort,
       signal: input.context.abortSignal,
     });
+    // This branch has verified the producer's exact raster/authority pair.
+    return { ...preserved, _meta: { ...preserved._meta,
+      [FCODE_MCP_CUA_SCREENSHOT_CONTENT_INDICES_META_KEY]: preserved.content.flatMap((block, index) =>
+        block.type === "image" && preserved.content[index + 1]?.type === "text" &&
+        isOfficialCuaImageRefText(String(preserved.content[index + 1]?.text)) ? [index] : []),
+    } };
   }
 
   let changed = false;
   const content: McpContentBlock[] = [];
-  const browserScreenshotIndices = input.compressOversizedImages
-    ? readBrowserScreenshotContentIndices(input.result)
-    : new Set<number>();
+  const captureIndices = readCuaScreenshotContentIndices(input.result);
+  const projectedCaptureIndices: number[] = [];
+  const indexedCaptures = input.result._meta?.[FCODE_MCP_CUA_SCREENSHOT_CONTENT_INDICES_META_KEY] !== undefined;
+  const transientMedia = !indexedCaptures && input.result._meta?.[FCODE_MCP_NODE_REPL_TRANSIENT_MEDIA_META_KEY] === true;
+  const browserScreenshotIndices =
+    input.compressOversizedImages && !transientMedia
+      ? readBrowserScreenshotContentIndices(input.result)
+      : new Set<number>();
 
   for (const [index, block] of input.result.content.entries()) {
-    const browserScreenshotArtifact = browserScreenshotIndices.has(index)
+    const captured = captureIndices.has(index);
+    const browserScreenshotArtifact = !captured && browserScreenshotIndices.has(index)
       ? await persistBrowserScreenshotArtifact(block, input)
       : undefined;
     const normalized = await normalizeMcpContentBlockForModel(block, {
       ...input,
+      transientMedia: transientMedia || captured,
+      computerUseCapture: captured,
       browserScreenshotArtifact,
     });
     // 纵深防御：非 authority 验证的 MCP 结果不得携带官方帧引用文本——第三方
@@ -76,6 +99,7 @@ export async function normalizeMcpToolResultForModel(input: {
       continue;
     }
     changed ||= normalized !== block;
+    if (captured && normalized.type === "image") projectedCaptureIndices.push(content.length);
     content.push(normalized);
     // 提示文本插在 image 之前会把 node_repl 特意排成 image-first 的
     // tool_result.content 重新变成 text-first；Anthropic 兼容网关只解析开头的连续 image，
@@ -89,7 +113,9 @@ export async function normalizeMcpToolResultForModel(input: {
     }
   }
 
-  return changed ? { ...input.result, content } : input.result;
+  return changed || indexedCaptures ? { ...input.result, content, _meta: { ...input.result._meta,
+    ...(indexedCaptures ? { [FCODE_MCP_CUA_SCREENSHOT_CONTENT_INDICES_META_KEY]: projectedCaptureIndices } : {}),
+  } } : input.result;
 }
 
 export function hasOfficialCuaFrameAuthority(result: unknown): result is McpToolCallResult {
@@ -121,6 +147,8 @@ async function normalizeMcpContentBlockForModel(
     context: ToolExecutionContext;
     descriptor: McpToolDescriptor;
     toolName: string;
+    transientMedia: boolean;
+    computerUseCapture: boolean;
     browserScreenshotArtifact?: BrowserScreenshotArtifact;
   },
 ): Promise<McpContentBlock> {
@@ -141,6 +169,7 @@ async function normalizeMcpContentBlockForModel(
       base64Payload,
       context: input.context,
       mimeType,
+      preservePixelDimensions: input.computerUseCapture,
     });
     if (compressed) return compressed;
   }
@@ -161,6 +190,12 @@ async function normalizeMcpContentBlockForModel(
     };
   }
 
+  if (input.transientMedia) {
+    return {
+      type: "text",
+      text: "Computer Use image exceeded the inline budget and was not saved. Capture a fresh bounded observation.",
+    };
+  }
   if (!input.context.artifactStore) {
     return {
       type: "text",
@@ -253,6 +288,7 @@ async function tryCompressHostNodeReplImage(input: {
   base64Payload: string;
   context: ToolExecutionContext;
   mimeType: string;
+  preservePixelDimensions: boolean;
 }): Promise<McpContentBlock | undefined> {
   const imageProcessorPort = input.context.imageProcessorPort;
   if (!imageProcessorPort) return undefined;
@@ -273,6 +309,8 @@ async function tryCompressHostNodeReplImage(input: {
       { signal: input.context.abortSignal },
     );
     const compressedBase64 = Buffer.from(prepared.data).toString("base64");
+    // Native coordinates refer to the captured raster, not a resized derivative.
+    if (input.preservePixelDimensions && prepared.resized !== false) return undefined;
     const compressedBase64Bytes = Buffer.byteLength(compressedBase64, "utf8");
     if (
       compressedBase64Bytes === 0 ||

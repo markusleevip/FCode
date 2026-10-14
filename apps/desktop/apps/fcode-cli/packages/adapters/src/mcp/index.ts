@@ -1085,6 +1085,7 @@ class NodeMcpAdapter implements McpPort {
           // 原判据是 `type !== "sse"`，把 stdio 一起放了进来，等于这道门槛在 stdio 上为零。
           // 注意这不是在挡凭证外泄（那由 origin 校验负责），而是在挡**结果伪造**。
           config.type === "http" && config.auth?.type === FCODE_OFFICIAL_MCP_AUTH_TYPE,
+          config.source?.kind === "builtin" && name === "node_repl",
         ),
       );
       const negotiatedProtocolEra = client.getProtocolEra();
@@ -1750,6 +1751,7 @@ function mcpRequestMeta(request: McpCallToolRequest): Record<string, unknown> {
   // bridge 则以它们作为回到当前 BrowserControlPort session 的唯一关联依据。runtime_scope
   // 不能从 child session id 猜测，必须由实际执行工具的 runtime 显式透传。
   const requestContext = {
+    ...(request.toolCallId ? { tool_call_id: request.toolCallId } : {}),
     ...(request.trace ? { trace_id: request.trace.traceId } : {}),
     ...(request.trace?.spanId ? { span_id: request.trace.spanId } : {}),
     ...(request.trace?.parentSpanId ? { parent_span_id: request.trace.parentSpanId } : {}),

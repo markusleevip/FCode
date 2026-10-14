@@ -28,6 +28,7 @@ import { registerHostServiceResourceTelemetry } from "./hostServiceResourceTelem
 import { resolveResourceTelemetryEnvironmentKey } from "./hostResourceTelemetryEnvironment.js";
 import { reportHostSessionCreate } from "./hostSessionCreateTelemetry.js";
 import { createBrowserControlMainBridge } from "./browserControlMainBridge.js";
+import { createComputerUseMainBridge } from "./computerUseMainBridge.js";
 import { materializeBrowserRecordingArtifact } from "./browserRecordingArtifactMaterializer.js";
 import {
   ServiceCollection,
@@ -250,6 +251,10 @@ const browserControlMainBridge = createBrowserControlMainBridge({
       ...(remoteBackend ? { remoteBackend } : {}),
     });
   },
+});
+const computerUseMainBridge = createComputerUseMainBridge((message) => {
+  if (!parentPort) throw new Error("Desktop Main is disconnected.");
+  parentPort.postMessage(message);
 });
 
 function reportHostLog(level: HostLogLevel, args: unknown[]): void {
@@ -2103,6 +2108,7 @@ async function disposeHostResources(reason: string): Promise<HostShutdownResult>
     logger.info(`disposing host resources, reason=${reason}`);
 
     stopHostNetworkTelemetry();
+    await computerUseMainBridge.dispose();
     hostSelfResourceTelemetry.stop();
     disposeLocalResourceTelemetry();
     disposeAttachedServicePorts();
@@ -2381,6 +2387,10 @@ parentPort.on("message", async (e: Electron.MessageEvent) => {
       requestId: msg.requestId,
       result: msg.result,
     });
+    return;
+  }
+  if (msg.type === HostMessageTypes.ComputerUseControlResult) {
+    computerUseMainBridge.handleResult(msg.requestId, msg.result);
     return;
   }
 
@@ -2816,6 +2826,7 @@ parentPort.on("message", async (e: Electron.MessageEvent) => {
               // browser-use：agent 的 interaction/browserExecute 经 fcodeAgentService 转到这个 executor，
               // 再经 parentPort 到 main 的 WebContentsView+CDP 执行。
               browserControlExecutor: browserControlMainBridge,
+              computerUseSubmission: computerUseMainBridge,
               // CUA 顶部提示属于物理 Windows 桌面投影；非 Windows 和远端 authority 都不得上报。
               cuaOperationStateReporter:
                 process.platform === "win32" ? cuaOperationStateReporter : undefined,

@@ -19,14 +19,9 @@ interface PluginMentionLabels {
   conflictReason: string;
 }
 
-// - 只展示 catalog 中 enabled 的 Plugin；disabled 条目不可被引用，不进入候选。
-// - 同名 manifest 冲突（conflictingPluginIds 非空）保持可见但禁选，展示冲突原因（V1 fail closed）。
-// - markdown 载体固定 `[@Label](plugin://stable-id)`；label 仅展示，身份在 destination。
-//   面板展示名 displayLabel 按当前 locale 走全 app 统一的 resolvePluginDisplayName；label 与
-//   载体 label 固定 entry.name，chip/canonical text/reminder 不随 locale 变化（chip 节点复用
-//   item.label，若本地化 label 会与按 markdown 重建的消息气泡文案分裂）。
-// - keywords 并入 listing 的全部语言显示名（无论当前 locale）：英文界面下打中文
-//   也能搜到官方插件（插件 @ 引用中文搜索）。
+// Only enabled user-facing plugins are candidates; conflicts remain visible but disabled.
+// Stable names and IDs preserve canonical markdown and history across locales.
+// Localized display labels and multilingual search keywords belong to presentation.
 function mapPluginCatalogToMentionItemsForTest(
   entries: FCodePluginReferenceCatalogEntry[],
   labels: PluginMentionLabels,
@@ -59,7 +54,7 @@ function mapPluginCatalogToMentionItemsForTest(
         ]
       : entries;
   return sorted
-    .filter((entry) => entry.enabled)
+    .filter((entry) => entry.enabled && entry.pluginId !== "node-repl-host@fcode-plugins-official")
     .map((entry) => {
       const conflicted = entry.conflictingPluginIds.length > 0;
       return {

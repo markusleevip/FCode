@@ -10,6 +10,8 @@
 
 FCode is a desktop AI assistant that lets you sign in directly with accounts such as Codex through OAuth, with no API key required. After installing it, authorize an account in the model settings, pick a model, and start chatting or working on local projects.
 
+**Current source version: 4.1.2.** Check the [Releases page](https://github.com/markusleevip/FCode/releases) for published installer versions and platforms.
+
 ## Highlight: sign in with your account via OAuth
 
 No need to request, copy and safeguard API keys. Click once in FCode, sign in with the account you already have in the browser, and chat directly with the models that account can access:
@@ -46,7 +48,21 @@ Each package comes with a same-named `.sha256` checksum file; verifying it after
 - View subscription usage of Codex, Antigravity and Cline accounts inside the app.
 - Plugins, MCP, skills, subagents and workflows.
 - A built-in browser for viewing and operating web pages.
+- Computer Use operates local applications through screenshots and real mouse and keyboard input, with macOS and Windows desktop entry points (experimental; see below).
 - Workspaces, sessions and settings are stored on your machine.
+
+## Computer Use: operate local applications (experimental)
+
+Computer Use lets the model observe the screen, operate real applications and check the result in a fresh screenshot. For example, ask it to open a specified video in Jianying, export the complete audio as MP3 and save it to a chosen directory with a new filename. It uses your machine's foreground, mouse and keyboard; ordinary conversations do not automatically enable desktop control.
+
+1. Configure and select a model that supports image input. Account authorization is described below.
+2. Start a new task, type `/` in the composer, select the official **computer-use** skill and describe the application, input file, output directory and expected result.
+3. At the first desktop observation, approve primary-display screenshots and real mouse and keyboard input for this task. Screenshots may include other applications and are sent to the selected model; FCode hides while operating. macOS requires version 14 or later and the requested screen recording, accessibility and event monitoring permissions.
+4. Press **physical Esc** to pause and take over, or return to the task panel in FCode and click **Pause / Stop**. Ordinary mouse movement, typing and application switching do not cancel the task. On macOS, FCode automatically yields its ordinary windows when brought forward, observes a fresh screenshot and continues. Use **Continue with Computer Use** to resume an explicitly paused task. Resolve missing permissions, a locked screen, Secure Input or a protected confirmation dialog manually before continuing.
+
+Version 4.1.2 improves screenshot context and the operation flow: model history retains at most the latest **three operation screenshots**, while earlier operation text and receipts remain. User-uploaded images are not removed by this rule and continue through the existing unified compression and media budget. The SDK can dispatch one logical action and observe its result in the same tool call, and the task panel distinguishes waiting for the model from active operation.
+
+Complete audio export through Jianying has been verified in a single-display development environment on an Apple silicon Mac. Windows has a desktop entry point, but the new screenshot optimization has not yet been retested on a real Windows machine. Intel Macs, multiple displays and the new installers still need separate compatibility checks. Results and duration depend on the model, application UI and system permissions; operation is not guaranteed for every application.
 
 ## Quick start: connect Codex or Antigravity
 
@@ -54,7 +70,7 @@ The walkthrough below shows how to sign in to Codex and Antigravity inside FCode
 
 ### 1. Install FCode
 
-Get the package for your platform from the Download table above and install it, then launch FCode. The current macOS packaging flow is neither signed nor notarized, so macOS may block it from opening; use only packages from this project's Releases page. If there is no package for your platform, build from source as described in "Build from source" below. Using a package does not require Node.js, pnpm or any build command.
+Get the package for your platform from the Download table above and install it, then launch FCode. By default, macOS packages have no Developer ID signature or notarization. Local builds containing the Computer Use Helper use ad-hoc signing, which is not an Apple-verified developer signature, so macOS may still block them from opening. Use only packages from this project's Releases page. If there is no package for your platform, build from source as described in "Build from source" below. Using a package does not require Node.js, pnpm or any build command.
 
 Before connecting an account, prepare a Codex or Antigravity account and make sure you can open the authorization page in a browser. The models actually available depend on what the service returns and on real conversations.
 
@@ -156,7 +172,7 @@ Useful options:
 ```bash
 ./apps/desktop/build.sh --release    # build, then package; same as build.sh followed by package.sh
 ./apps/desktop/package.sh arm64      # pick the architecture: arm64 or x64
-FCODE_ENABLE_MAC_SIGN=1 ./apps/desktop/package.sh   # sign only when a signing certificate is available; unsigned by default
+FCODE_ENABLE_MAC_SIGN=1 ./apps/desktop/package.sh   # enable certificate signing; no Developer ID or notarization by default; local Helper builds use ad-hoc signing
 ```
 
 ### Windows
@@ -183,6 +199,7 @@ You can also double-click the scripts inside `apps/desktop`.
 ### Notes on running
 
 - Build before the first Run; Run tells you to run Build first if dependencies are missing.
+- Run checks the local Electron executable. If the dependency package exists but its binary is missing, it makes one restoration attempt with that package's own installer, which may need network access. A failed restoration reports an explicit error and never uses another Electron from PATH.
 - Run uses an isolated local data directory and does not modify any existing FCode data in your home directory (missing local settings are imported read-only once); no environment variables are needed.
 - Run needs local port 5174 to be free; stop any previously started instance if it is in use.
 - Keep the terminal open while it runs and press `Ctrl+C` to exit.

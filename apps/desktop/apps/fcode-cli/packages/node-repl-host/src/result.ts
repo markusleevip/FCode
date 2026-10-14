@@ -1,11 +1,14 @@
 import {
   FCODE_MCP_BROWSER_SCREENSHOT_CONTENT_INDICES_META_KEY,
   FCODE_MCP_NODE_REPL_CUA_APP_META_KEY,
+  FCODE_MCP_NODE_REPL_TRANSIENT_MEDIA_META_KEY,
+  FCODE_MCP_CUA_SCREENSHOT_CONTENT_INDICES_META_KEY,
 } from "@fcode/contracts/mcp";
 import { isOfficialCuaImageRefText } from "@fcode/cua/frame-contract";
 import { CUA_APP_ASSOCIATIONS_META_KEY } from "@fcode/cua/host-display-contract";
 import type { NodeReplRunResult } from "@fcode/core/repl";
 import type { CallToolResult } from "@modelcontextprotocol/server";
+import { cuaScreenshotContentIndices } from "./capture-provenance.js";
 
 type EmbeddedContentBlock = CallToolResult["content"][number];
 
@@ -98,6 +101,10 @@ export function toMcpRunResult(run: NodeReplRunResult): CallToolResult {
   // 无条件丢弃，只接受 CUA bridge 从 broker 响应直接记录的 run.cuaApp。
   delete responseMeta[CUA_APP_ASSOCIATIONS_META_KEY];
   delete responseMeta[FCODE_MCP_NODE_REPL_CUA_APP_META_KEY];
+  // Sandbox-written metadata cannot turn screenshot retention on or off.
+  delete responseMeta[FCODE_MCP_NODE_REPL_TRANSIENT_MEDIA_META_KEY];
+  delete responseMeta[FCODE_MCP_CUA_SCREENSHOT_CONTENT_INDICES_META_KEY];
+  if (run.transientMedia) responseMeta[FCODE_MCP_NODE_REPL_TRANSIENT_MEDIA_META_KEY] = true;
   if (run.cuaApp) responseMeta[FCODE_MCP_NODE_REPL_CUA_APP_META_KEY] = run.cuaApp;
   // Anthropic 兼容网关（如 bigmodel MaaS）只解析 tool_result.content 开头的连续
   // image block，一旦先遇到 text 就丢弃后面的图，模型只能看到 image_ref 元数据而看不到画面
@@ -135,8 +142,7 @@ export function toMcpRunResult(run: NodeReplRunResult): CallToolResult {
             mimeType: image.mimeType,
           }))),
     ...(structuredResults.length > 0
-      ? // 结构化观察已携带截图；模型再次 emitImage 同一张图时，只保留结构化结果中的副本。
-        // 去重必须逐字节相等：保留截图原始像素及其 frame_id 绑定，不同图片仍交由帧校验拒绝。
+      ? // Structured observations already contain these exact raster bytes.
         (run.images ?? [])
           .filter(
             (image) =>
@@ -154,6 +160,8 @@ export function toMcpRunResult(run: NodeReplRunResult): CallToolResult {
     ...(embedded?.content ?? []),
     ...(textParts.length > 0 ? [{ type: "text" as const, text: textParts.join("\n") }] : []),
   ];
+  responseMeta[FCODE_MCP_CUA_SCREENSHOT_CONTENT_INDICES_META_KEY] =
+    cuaScreenshotContentIndices(content, run.cuaCaptures);
 
   return {
     content: content.length > 0 ? content : [{ type: "text" as const, text: "(no output)" }],

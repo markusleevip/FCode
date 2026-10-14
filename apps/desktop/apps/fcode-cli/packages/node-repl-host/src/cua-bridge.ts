@@ -2,6 +2,8 @@ import { randomUUID } from "node:crypto";
 import { createConnection } from "node:net";
 import type { NodeReplCuaAppIdentity, NodeReplRequestMeta, NodeReplSession } from "@fcode/core";
 import { CUA_APP_ASSOCIATIONS_META_KEY } from "@fcode/cua/host-display-contract";
+import type { ComputerUseRuntimeContext } from "@fcode/cua";
+import { CuaControlError } from "@fcode/cua/control-contract";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 
 export const NODE_REPL_CUA_BRIDGE_SYMBOL = Symbol.for("fcode.node-repl.computer-use-bridge");
@@ -42,7 +44,7 @@ export function createComputerUseBridgeGlobals(input: {
   };
   const assertAvailable = (): ActiveCuaNodeReplCall => {
     const active = assertActive();
-    if (active.requestMeta.runtime_scope === "subagent") {
+    if (active.requestMeta.runtime_scope !== "main") {
       throw new Error(CUA_UNAVAILABLE_IN_SUBAGENT_MESSAGE);
     }
     if (!input.broker) {
@@ -63,7 +65,7 @@ export function createComputerUseBridgeGlobals(input: {
         {
           method,
           input: methodInput,
-          context: requestContext(active.requestMeta),
+          context: buildComputerUseRequestContext(active.requestMeta),
         },
         active.signal,
       );
@@ -74,6 +76,9 @@ export function createComputerUseBridgeGlobals(input: {
       // sandbox 通道上，无法再区分「producer 给的」和「cell 里自己写的」。
       const app = readPrimaryAppIdentity(result.result);
       if (app) input.session().recordCuaAppIdentity(app);
+      for (const block of result.result.content) {
+        if (block.type === "image") input.session().recordCuaCapture({ base64: block.data, mimeType: block.mimeType });
+      }
       return result.result;
     },
   };
@@ -108,7 +113,9 @@ function readPrimaryAppIdentity(result: CallToolResult): NodeReplCuaAppIdentity 
   };
 }
 
-function requestContext(meta: NodeReplRequestMeta): Record<string, unknown> {
+export function buildComputerUseRequestContext(
+  meta: NodeReplRequestMeta,
+): ComputerUseRuntimeContext {
   const stringMeta = (key: string): string | undefined => {
     const value = meta[key];
     return typeof value === "string" && value.trim() ? value.trim() : undefined;
@@ -119,10 +126,23 @@ function requestContext(meta: NodeReplRequestMeta): Record<string, unknown> {
   const workspaceIdentity = stringMeta("workspace_identity");
   const workspaceKey = stringMeta("workspace_key") ?? workspaceIdentity ?? workspacePath;
   if (!workspaceKey) throw new Error("node_repl CUA request is missing workspaceKey metadata");
-  const clientMode = stringMeta("client_mode") ?? "desktop-continuous";
-  const deliveryKind = stringMeta("delivery_kind") ?? clientMode;
+  const clientMode = stringMeta("client_mode");
+  const deliveryKind = stringMeta("delivery_kind");
+  const turnId = stringMeta("turn_id"),
+    toolCallId = stringMeta("tool_call_id");
+  if (
+    meta.runtime_scope !== "main" ||
+    !turnId ||
+    !toolCallId ||
+    clientMode !== "desktop-continuous" ||
+    deliveryKind !== "desktop-continuous" ||
+    workspaceIdentity ||
+    stringMeta("remote_session_id")
+  ) {
+    throw new Error("Computer Use requires a live local main tool invocation.");
+  }
   return {
-    runtimeScope: meta.runtime_scope === "subagent" ? "subagent" : "main",
+    runtimeScope: "main",
     sessionId,
     ...(workspacePath ? { workspacePath } : {}),
     ...(workspaceIdentity ? { workspaceIdentity } : {}),
@@ -130,7 +150,8 @@ function requestContext(meta: NodeReplRequestMeta): Record<string, unknown> {
     ...(stringMeta("remote_session_id")
       ? { remoteSessionId: stringMeta("remote_session_id") }
       : {}),
-    ...(stringMeta("turn_id") ? { turnId: stringMeta("turn_id") } : {}),
+    turnId,
+    toolCallId,
     clientMode,
     deliveryKind,
     ...(stringMeta("trace_id")
@@ -147,7 +168,7 @@ function requestContext(meta: NodeReplRequestMeta): Record<string, unknown> {
 
 async function sendCuaBrokerRequest(
   broker: NodeReplCuaBrokerConnection,
-  request: { method: string; input: unknown; context: Record<string, unknown> },
+  request: { method: string; input: unknown; context: ComputerUseRuntimeContext },
   signal: AbortSignal,
 ): Promise<{ result: CallToolResult; responseMeta?: Record<string, unknown> }> {
   const id = randomUUID();
@@ -185,14 +206,29 @@ async function sendCuaBrokerRequest(
           id?: unknown;
           ok?: unknown;
           error?: unknown;
+          errorCode?: unknown;
+          errorDetails?: Record<string, unknown>;
           result?: CallToolResult;
           responseMeta?: Record<string, unknown>;
         };
         if (payload.id !== id) throw new Error("Computer Use broker response id mismatch");
-        if (payload.ok !== true)
+        if (typeof payload.ok !== "boolean") {
+          throw new Error("Computer Use broker response status is invalid");
+        }
+        if (payload.errorCode !== undefined &&
+            (payload.ok || payload.result !== undefined || typeof payload.error !== "string" ||
+             typeof payload.errorCode !== "string" ||
+             !/^[a-z][a-z0-9_]{0,127}$/.test(payload.errorCode))) {
+          throw new Error("Computer Use broker response error code is invalid");
+        }
+        if (!payload.ok) {
+          if (typeof payload.errorCode === "string") {
+            throw new CuaControlError(payload.errorCode, payload.error as string, payload.errorDetails);
+          }
           throw new Error(
             typeof payload.error === "string" ? payload.error : "Computer Use broker failed",
           );
+        }
         if (!payload.result) throw new Error("Computer Use broker returned no result");
         finish(undefined, { result: payload.result, responseMeta: payload.responseMeta });
       } catch (error) {

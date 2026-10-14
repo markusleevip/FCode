@@ -5,8 +5,6 @@ import {
   MCP_TOOL_DISPLAY_MAX_NAME_CHARS,
   CUA_TARGET_APP_DISPLAY_META_KEY,
   cuaTargetAppDisplaySchema,
-  nodeReplCuaAppDisplaySchema,
-  FCODE_MCP_NODE_REPL_CUA_APP_META_KEY,
   SEND_MESSAGE_TOOL_NAME,
   SendMessageOutputSchema,
   TASK_OUTPUT_DISPLAY_MAX_OUTPUT_CHARS,
@@ -16,7 +14,6 @@ import {
   TASK_STOP_TOOL_NAME,
   TaskStopOutputSchema,
   type DiffHunk,
-  type NodeReplCuaAppDisplay,
   type ToolResultDisplayPayload,
 } from "@fcode/contracts";
 import { createBashResultDisplay } from "./bash-result-display.js";
@@ -28,6 +25,9 @@ import { createWorkflowObservationDisplay } from "./workflow-observation-display
 // 拆到 create-workflow-display.ts 后保持既有导出面（handlers/create-workflow.ts 仍从这里 import）。
 export { createCreateWorkflowDisplay } from "./create-workflow-display.js";
 import { isRecord } from "./utils.js";
+import { createNodeReplDisplay } from "./node-repl-result-display.js";
+
+export { MAX_NODE_REPL_DISPLAY_IMAGE_BASE64_BYTES } from "./node-repl-result-display.js";
 import { parseOfficialMcpToolError, type OfficialMcpToolErrorCode } from "@fcode/shared";
 import {
   CUA_REQUEST_ACCESS_STATUS_META_KEY,
@@ -38,8 +38,6 @@ const MAX_DISPLAY_DIFF_HUNKS = 8;
 const MAX_DISPLAY_DIFF_LINES = 160;
 const MAX_SEND_MESSAGE_DISPLAY_FIELD_BYTES = 4 * 1024;
 const MAX_TASK_STOP_DISPLAY_FIELD_BYTES = 16 * 1024;
-export const MAX_NODE_REPL_DISPLAY_IMAGE_BASE64_BYTES = 200 * 1024;
-const MAX_NODE_REPL_DISPLAY_IMAGES = 2;
 
 export function createMcpToolDisplay(
   metadata:
@@ -336,76 +334,6 @@ function safeJson(value: unknown): string {
   } catch {
     return "null";
   }
-}
-
-/**
- * 读取宿主写入的 CUA 目标应用身份。
- *
- * 只认 `fcode/nodeReplCuaApp`：producer 自己的 `fcode.cua/app-associations-v1` 也可能出现在
- * `_meta` 里，但那个键经模型可写的 `nodeRepl.setResponseMeta` /
- * `nodeRepl.emitStructuredResult` 同样能到达，宿主已在 toMcpRunResult 里把它删掉。这里不做
- * 第二次兜底解析，避免把已经判定为不可信的来源重新接回展示面。
- */
-function readNodeReplCuaApp(output: Record<string, unknown>): NodeReplCuaAppDisplay | undefined {
-  const meta = isRecord(output._meta) ? output._meta : undefined;
-  const parsed = nodeReplCuaAppDisplaySchema.safeParse(
-    meta?.[FCODE_MCP_NODE_REPL_CUA_APP_META_KEY],
-  );
-  return parsed.success ? parsed.data : undefined;
-}
-
-function createNodeReplDisplay(
-  toolName: string,
-  output: unknown,
-): ToolResultDisplayPayload | undefined {
-  if (toolName !== "js" && toolName !== "mcp__node_repl__js") return undefined;
-  if (!isRecord(output)) return undefined;
-
-  const candidates = [
-    ...(Array.isArray(output.images) ? output.images : []),
-    ...(Array.isArray(output.content) ? output.content : []),
-  ];
-  const images: Array<{ base64: string; mimeType: string }> = [];
-  let truncated = false;
-
-  for (const candidate of candidates) {
-    if (!isRecord(candidate)) continue;
-    const mimeType = candidate.mimeType;
-    const encoded = candidate.base64 ?? candidate.data;
-    if (
-      typeof mimeType !== "string" ||
-      !/^image\/[a-z0-9.+-]+$/iu.test(mimeType) ||
-      typeof encoded !== "string"
-    ) {
-      continue;
-    }
-    const base64 = encoded.startsWith("data:")
-      ? encoded.slice(Math.max(0, encoded.indexOf(",") + 1))
-      : encoded;
-    if (
-      base64.length === 0 ||
-      Buffer.byteLength(base64, "utf8") > MAX_NODE_REPL_DISPLAY_IMAGE_BASE64_BYTES
-    ) {
-      truncated = true;
-      continue;
-    }
-    if (images.length >= MAX_NODE_REPL_DISPLAY_IMAGES) {
-      truncated = true;
-      continue;
-    }
-    images.push({ base64, mimeType });
-  }
-
-  // 纯动作 cell（点击、输入）没有截图，但仍要把 App 身份投影给工具卡的 leading icon；
-  // 因此不能再以「有图」作为产出 display 的唯一条件。
-  const app = readNodeReplCuaApp(output);
-  if (images.length === 0 && !app) return undefined;
-  return {
-    kind: "node_repl_images",
-    ...(images.length > 0 ? { images } : {}),
-    ...(app ? { app } : {}),
-    ...(truncated ? { truncated: true } : {}),
-  };
 }
 
 function compactTaskStopDisplayMessage(output: {

@@ -1,20 +1,12 @@
+import { prepareModelRequestMedia } from "../helpers/model-request-media.js";
+import { createModelStreamToolBuffer } from "../helpers/model-stream-tool-buffer.js";
+import { validateModelStreamResult } from "../helpers/model-stream-result.js";
 import { beginLocalTurnPreparation } from "@fcode/contracts";
 import { runWithModelInvocationContext, traceContextToLogContext } from "../deps.js";
 import type { ModelReasoningContentBlock, ModelToolCall, ModelUsage, ToolCallId } from "../deps.js";
 import {
-  buildSuspiciousEmptyDiagnostics,
-  finalizeSuspiciousEmptyModelResult,
-  isContextExceededFinishReason,
-  isSuspiciousEmptyModelResult,
-  logModelRequestMediaSummary,
-  logMediaBudgetProjection,
-  logMediaCapabilityProjection,
   normalizeStreamError,
   normalizeModelToolCallsForRuntime,
-  projectMessagesWithMediaAttachmentPaths,
-  projectMessagesForInputFormat,
-  projectMessagesForMediaBudget,
-  readRawFinishReason,
 } from "../helpers/index.js";
 import type { RunModelTextRequestOptions, RuntimeModelTextResult } from "../types.js";
 import type { AgentRuntimeInternal } from "../internal.js";
@@ -23,15 +15,7 @@ import { createModelStreamingEventQueue } from "./model-streaming-event-queue.js
 import { getOrCreateReasoningBlock } from "./reasoning-stream.js";
 import { createRefreshRuntimeHeadersBeforeModelAttempt } from "./model-runtime-headers.js";
 import { resolveModelRequestSessionTypeFromTaskType } from "./model-request-session-type.js";
-import { isOutputTokenLimitFinishReason } from "./turn-output-token-continuation.js";
-
-const TOOL_INPUT_STREAM_DELTA_FALLBACK_FLUSH_CHARS = 4096;
-
-function hasToolInputLineBreak(value: string): boolean {
-  return (
-    value.includes("\n") || value.includes("\r") || value.includes("\\n") || value.includes("\\r")
-  );
-}
+import { createComputerUseRequestTelemetry } from "../helpers/computer-use-request-telemetry.js";
 
 export async function runModelTextRequest(
   this: AgentRuntimeInternal,
@@ -46,35 +30,7 @@ export async function runModelTextRequest(
   // 闲时 turn 只覆盖了父 runtime 的默认模型，foreground child 重新建
   // request 时仍读取 session 配置，导致 provider options/capability 与本轮模型分叉。
   // turn 快照存在时必须整体采用快照，不能用 `??` 回退到用户模型的字段。
-  const mediaPathMessages = await projectMessagesWithMediaAttachmentPaths(
-    options.messages,
-    this.artifactStore,
-  );
-  const capabilityProjection = projectMessagesForInputFormat(
-    mediaPathMessages,
-    model.properties.inputFormat,
-  );
-  logMediaCapabilityProjection(this.logger, options.traceContext, capabilityProjection, {
-    event: "model.request.media_capability_projection",
-    message: "Model request media capability projection",
-    model: `${model.providerId}/${model.modelId}`,
-  });
-  const mediaProjection = projectMessagesForMediaBudget(capabilityProjection.messages, {
-    latestRealUserMessageIndex: options.latestRealUserMessageIndex,
-  });
-  logMediaBudgetProjection(this.logger, options.traceContext, mediaProjection, {
-    event: "model.request.media_projection",
-    message: "Model request media budget projection",
-  });
-  const projectedOptions =
-    mediaProjection.messages === options.messages
-      ? options
-      : { ...options, messages: mediaProjection.messages };
-  logModelRequestMediaSummary(this.logger, projectedOptions.traceContext, {
-    incomingMessages: options.messages,
-    mediaProjection,
-    providerMessages: projectedOptions.messages,
-  });
+  const { projectedOptions, screenshots } = await prepareModelRequestMedia(this, options);
   // 正常请求传递模型级 effective 预算，Compact 传递 min(effective, 20K) 的 summary
   // 任务预算；adapter 只做 provider 兼容映射，不再施加独立 global cap。
   const modelInvocationContext = {
@@ -139,9 +95,11 @@ export async function runModelTextRequest(
   this.logContextUsageSnapshot(projectedOptions, contextUsageSnapshot);
 
   if (!this.shouldStreamModelText()) {
+    const timing = createComputerUseRequestTelemetry(this.logger, projectedOptions.traceContext, screenshots.diagnostics.capturedAfter);
     const result = await runWithModelInvocationContext(modelInvocationContext, () =>
       model.generateText(modelRequest),
     );
+    timing.finish(result.usage ?? {});
     const normalizedToolCalls = normalizeModelToolCallsForRuntime(result.toolCalls, {
       logger: this.logger,
       model: executionModelSelection,
@@ -163,7 +121,6 @@ export async function runModelTextRequest(
   const reasoningById = new Map<string, ModelReasoningContentBlock>();
   const toolCalls: ModelToolCall[] = [];
   const toolCallIds = new Set<string>();
-  const toolInputDeltaBuffers = new Map<ToolCallId, string>();
   const publishStreamSnapshot = () => options.onStreamSnapshot?.({ reasoning, text });
   const streamingEventQueue = createModelStreamingEventQueue({
     events: options.events,
@@ -182,49 +139,12 @@ export async function runModelTextRequest(
     streamingEventQueue.enqueue(payload);
     await streamingEventQueue.drain();
   };
-  const flushToolInputDelta = async (toolCallId: ToolCallId) => {
-    const delta = toolInputDeltaBuffers.get(toolCallId);
-    if (!delta) {
-      return;
-    }
-    toolInputDeltaBuffers.delete(toolCallId);
-    this.logger?.debug("Model streaming tool input delta flushed", {
-      ...traceContextToLogContext(options.traceContext),
-      deltaLength: delta.length,
-      event: "model.streaming.tool_input_delta.flush",
-      module: "core.runtime",
-      toolCallId,
-    });
-    await enqueueStreamingEvent({
-      assistantMessageId: options.assistantMessageId,
-      delta,
-      done: false,
-      kind: "tool_input_delta",
-      toolCallId,
-    });
-  };
-  const flushAllToolInputDeltas = async () => {
-    for (const toolCallId of Array.from(toolInputDeltaBuffers.keys())) {
-      await flushToolInputDelta(toolCallId);
-    }
-  };
-  const appendToolInputDelta = async (toolCallId: ToolCallId, delta: string) => {
-    if (!delta) {
-      return;
-    }
-    const next = `${toolInputDeltaBuffers.get(toolCallId) ?? ""}${delta}`;
-    toolInputDeltaBuffers.set(toolCallId, next);
-    if (
-      hasToolInputLineBreak(next) ||
-      next.length >= TOOL_INPUT_STREAM_DELTA_FALLBACK_FLUSH_CHARS
-    ) {
-      // 实验原因：Write/Edit 的行数体验依赖 content 换行尽快到 UI。
-      // 这里遇到真实/JSON 转义换行就 flush，同时保留超长单行兜底，
-      // 避免没有换行的参数一直缓冲到 tool_input_end。
-      await flushToolInputDelta(toolCallId);
-    }
-  };
+  const { toolInputDeltaBuffers, flushToolInputDelta, flushAllToolInputDeltas, appendToolInputDelta } =
+    createModelStreamToolBuffer(this.logger, options.traceContext, (toolCallId, delta) => enqueueStreamingEvent({
+      assistantMessageId: options.assistantMessageId, delta, done: false, kind: "tool_input_delta", toolCallId,
+    }));
 
+  const timing = createComputerUseRequestTelemetry(this.logger, projectedOptions.traceContext, screenshots.diagnostics.capturedAfter);
   const modelStream = runWithModelInvocationContext(modelInvocationContext, () =>
     model.streamText(modelRequest),
   );
@@ -253,6 +173,7 @@ export async function runModelTextRequest(
         }
 
         case "text_delta": {
+          if (event.text.length) timing.output();
           text += event.text;
           options.onStreamTextDelta?.(event.text);
           publishStreamSnapshot();
@@ -295,6 +216,7 @@ export async function runModelTextRequest(
         }
 
         case "reasoning_delta": {
+          if (event.text.length) timing.output();
           const block = getOrCreateReasoningBlock({
             id: event.id,
             providerMetadata: event.providerMetadata,
@@ -353,6 +275,7 @@ export async function runModelTextRequest(
         }
 
         case "tool_input_delta": {
+          if (event.delta.length) timing.output();
           await appendToolInputDelta(event.id as ToolCallId, event.delta);
           break;
         }
@@ -376,6 +299,7 @@ export async function runModelTextRequest(
         }
 
         case "tool_call": {
+          timing.output();
           const [toolCall] =
             normalizeModelToolCallsForRuntime([event.toolCall], {
               logger: this.logger,
@@ -449,62 +373,16 @@ export async function runModelTextRequest(
       }
     }
   } catch (error) {
+    timing.finish(usage, "failed");
     await streamingEventQueue.drain();
     throw error;
   }
   await streamingEventQueue.drain();
+  timing.finish(usage);
 
-  const rawFinishReason = readRawFinishReason(providerMetadata);
-  const outputTokenLimit = isOutputTokenLimitFinishReason(finishReason, rawFinishReason);
-  const contextExceeded =
-    toolCalls.length === 0 &&
-    !outputTokenLimit &&
-    isContextExceededFinishReason(finishReason, rawFinishReason);
-  if (contextExceeded) {
-    // 这里若把 HTTP 200 + finish metadata 提前抛成流异常，会先被通用断流恢复接管，
-    // 从而绕过 turn 层的 Reactive Compact。保留原始结果，由 turn 层统一处理超窗语义。
-    this.logger?.warn("Model stream ended with provider context overflow", {
-      ...traceContextToLogContext(options.traceContext),
-      event: "model.runtime.stream.context_exceeded",
-      finishReason,
-      module: "core.runtime",
-      modelProviderId: executionModelSelection.providerId,
-      modelId: executionModelSelection.modelId,
-      rawFinishReason,
-      textLength: text.length,
-      toolCallCount: toolCalls.length,
-    });
-  }
-
-  // 流在只发出 start/prelude 后以 finishReason=unknown 结束时，会被记到 turn-model-step
-  // 的 suspicious empty。这里在返回 result 前再扫一遍 providerMetadata/空 completion。
-  if (
-    !contextExceeded &&
-    !outputTokenLimit &&
-    isSuspiciousEmptyModelResult(finishReason, text.length, toolCalls.length, usage)
-  ) {
-    // fcode-plan 常返回 HTTP 200 空 SSE，需在抛错前打出 finish/providerMetadata 摘要，避免只能看到 UI 泛化文案。
-    this.logger?.warn("Model stream ended with suspicious empty completion", {
-      ...traceContextToLogContext(options.traceContext),
-      event: "model.runtime.stream.suspicious_empty",
-      module: "core.runtime",
-      modelProviderId: executionModelSelection.providerId,
-      modelId: executionModelSelection.modelId,
-      textLength: text.length,
-      toolCallCount: toolCalls.length,
-      ...buildSuspiciousEmptyDiagnostics({
-        finishReason,
-        providerMetadata,
-        rawFinishReason,
-      }),
-    });
-    finalizeSuspiciousEmptyModelResult({
-      finishReason,
-      model: executionModelSelection,
-      providerMetadata,
-      rawFinishReason,
-    });
-  }
+  validateModelStreamResult(this.logger, options.traceContext, executionModelSelection, {
+    finishReason, providerMetadata, usage, textLength: text.length, toolCallCount: toolCalls.length,
+  });
 
   return {
     ...(contextUsageBreakdown.length > 0 ? { contextUsageBreakdown } : {}),

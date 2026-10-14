@@ -16,6 +16,9 @@ import type {
   ResolvedModelApiCallObservation,
 } from "../telemetry/index.js";
 
+import type { AttachmentRef } from "./attachment-ref.js";
+export type { AttachmentRef, AttachmentKind } from "./attachment-ref.js";
+
 export * from "./image-media.js";
 export * from "./model.js";
 export * from "./invocation-context.js";
@@ -324,19 +327,6 @@ export interface ModelToolCall {
   name: string;
   input: unknown;
   providerExecuted?: boolean;
-}
-
-export type AttachmentKind = "local_file" | "resource" | "inline";
-
-export interface AttachmentRef {
-  id: string;
-  kind: AttachmentKind;
-  uri?: string;
-  path?: string;
-  mimeType?: string;
-  sizeBytes?: number;
-  sha256?: string;
-  placeholder?: string;
 }
 
 export interface ModelTextContentBlock {

@@ -1,4 +1,5 @@
 import { localTtftContextSchema, localTtftClockSchema } from "../localTtft.js";
+import { computerUseInvocationSchema } from "../computer-use-control.js";
 // Command 层：信封 / ACK / 命令全集 payload。
 // conversation rewind 无独立命令（裁决：= editUserQuery 的 UI 入口）；
 // workspace-only 文件撤销走 applyFileRewind，不截断聊天历史。
@@ -321,6 +322,8 @@ export const ROW_TARGETING_COMMANDS: ReadonlySet<CommandType> = new Set([
 
 // ── 信封 ──
 export const commandEnvelopeSchema = z.object({
+  // Transient Main-issued proof. Desktop Host consumes and removes it before CLI admission.
+  computerUseInvocation: computerUseInvocationSchema.optional(),
   ttft: localTtftContextSchema.optional(),
   // uuid v7，客户端生成，重试不变。
   commandId: z.string(),
